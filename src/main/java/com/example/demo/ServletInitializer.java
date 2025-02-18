@@ -10,4 +10,18 @@ public class ServletInitializer extends SpringBootServletInitializer {
         return application.sources(DemoApplication.class);
     }
 
+    void func1(){
+
+    }
+
+    void func4(){
+
+    }
+
+
+
+
+    void func5(){
+
+    }
 }
