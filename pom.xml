@@ -89,6 +89,12 @@
                     </excludes>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.jetbrains</groupId>
+                <artifactId>fernflower-maven-plugin</artifactId>
+                <version>1.0</version>
+            </plugin>
         </plugins>
     </build>
 
