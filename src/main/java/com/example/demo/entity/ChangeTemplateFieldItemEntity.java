@@ -14,33 +14,30 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 
+@EqualsAndHashCode(callSuper = true)
+@Entity
+@Table(name = "change_template_field_item")
 @Data
 @Builder
 @AllArgsConstructor
 @RequiredArgsConstructor
-@Entity
-@Table(name = "custom_field_picklist")
-public class CustomFieldPicklistEntity extends BaseEntity<Long> {
+public class ChangeTemplateFieldItemEntity extends BaseEntity<Long> {
 
     @Id
     @Column(name = "ID")
-    @SequenceGenerator(name = "CUSTOM_FIELD_PICKLIST_SEQ", sequenceName = "CUSTOM_FIELD_PICKLIST_SEQ", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "CUSTOM_FIELD_PICKLIST_SEQ")
+    @SequenceGenerator(name = "CHANGE_TEMPLATE_FIELD_ITEM_SEQ", sequenceName = "CHANGE_TEMPLATE_FIELD_ITEM_SEQ", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "CHANGE_TEMPLATE_FIELD_ITEM_SEQ")
     private Long id;
+
+    @Basic
+    @Column(name = "CHANGE_TEMPLATE_ID")
+    private Long changeTemplateId;
 
     @Basic
     @Column(name = "CUSTOM_FIELD_ID")
     private Long customFieldId;
 
     @Basic
-    @Column(name = "IS_DEFAULT")
-    private Boolean isDefault;
-
-    @Basic
-    @Column(name = "PICKLIST_VALUE")
-    private String picklistValue;
-
-    @Basic
-    @Column(name = "POSTITION")
-    private Long position;
+    @Column(name = "FIELD_VALUE")
+    private String fieldValue;
 }

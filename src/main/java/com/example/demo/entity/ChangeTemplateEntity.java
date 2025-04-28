@@ -16,36 +16,24 @@ import lombok.RequiredArgsConstructor;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@Table(name = "custom_field_value")
+@Table(name = "change_template")
 @Data
-@Builder
 @AllArgsConstructor
 @RequiredArgsConstructor
-public class CustomFieldValueEntity extends BaseEntity<Long> {
+@Builder
+public class ChangeTemplateEntity extends BaseEntity<Long> {
 
     @Id
     @Column(name = "ID")
-    @SequenceGenerator(name = "CUSTOM_FIELD_VALUE_SEQ", sequenceName = "CUSTOM_FIELD_VALUE_SEQ", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "CUSTOM_FIELD_VALUE_SEQ")
+    @SequenceGenerator(name = "CHANGE_TEMPLATE_SEQ", sequenceName = "CHANGE_TEMPLATE_SEQ", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "CHANGE_TEMPLATE_SEQ")
     private Long id;
 
     @Basic
-    @Column(name = "CUSTOM_FIELD_ID")
-    private Long customFieldId;
+    @Column(name = "NAME")
+    private String name;
 
     @Basic
-    @Column(name = "FIELD_VALUE")
-    private String fieldValue;
-
-    @Basic
-    @Column(name = "MIN")
-    private Long min;
-
-    @Basic
-    @Column(name = "MAX")
-    private Long max;
-
-    @Basic
-    @Column(name = "IS_DEFAULT")
-    private Boolean isDefault;
+    @Column(name = "DESCRIPTION")
+    private String description;
 }
