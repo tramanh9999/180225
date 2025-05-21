@@ -20,18 +20,18 @@ public abstract class BaseEntity<ID extends Serializable> implements Serializabl
     private static final long serialVersionUID = 1L;
 
     @CreatedDate
-    @Column(name = "CREATED_DATE", updatable = false)
+    @Column(name = "created_date", updatable = false)
     private LocalDateTime createdDate;
 
     @CreatedBy
-    @Column(name = "CREATED_BY", updatable = false)
+    @Column(name = "created_by", updatable = false)
     private String createdBy;
 
     @LastModifiedDate
-    @Column(name = "MODIFIED_DATE")
+    @Column(name = "modified_date")
     private LocalDateTime modifiedDate;
 
     @LastModifiedBy
-    @Column(name = "MODIFIED_BY")
+    @Column(name = "modified_by")
     private String modifiedBy;
 }

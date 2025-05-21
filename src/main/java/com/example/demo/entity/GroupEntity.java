@@ -12,40 +12,36 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@Table(name = "change_template")
+@Table(name = "GROUP") // "GROUP" is a reserved keyword in SQL, so table name might need adjustment
 @Data
-@AllArgsConstructor
-@RequiredArgsConstructor
 @Builder
-public class ChangeTemplateEntity extends BaseEntity<Long> {
+@AllArgsConstructor
+@NoArgsConstructor
+public class GroupEntity extends BaseEntity<Long> {
 
     @Id
     @Column(name = "id")
-    @SequenceGenerator(name = "CHANGE_TEMPLATE_SEQ", sequenceName = "CHANGE_TEMPLATE_SEQ", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "CHANGE_TEMPLATE_SEQ")
+    @SequenceGenerator(name = "GROUP_SEQ", sequenceName = "GROUP_SEQ", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "GROUP_SEQ")
     private Long id;
 
     @Basic
-    @Column(name = "name")
+    @Column(name = "name", length = 255) // Assuming VARCHAR2 default length or specify
     private String name;
 
     @Basic
-    @Column(name = "description")
+    @Column(name = "description", length = 255) // Assuming VARCHAR2 default length or specify
     private String description;
-
-    @Basic
-    @Column(name = "notice", length = 255) // Assuming VARCHAR2 default length or specify
-    private String notice;
-
-    @Basic
-    @Column(name = "isActive")
-    private Integer isActive; // Assuming NUMBER maps to Integer, 1 for true, 0 for false
 
     @Basic
     @Column(name = "deleted")
     private Integer deleted; // 0 for not deleted, 1 for deleted
+
+    @Basic
+    @Column(name = "is_change_role")
+    private Boolean isChangeRole;
 }
