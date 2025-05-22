@@ -1,9 +1,9 @@
 package com.example.demo.service;
 
+import com.example.demo.model.ChangeTemplateFieldItemDto;
+import com.example.demo.model.ChangeTemplateModel;
+import com.example.demo.model.PagingRequestModel;
 import org.springframework.data.domain.Page;
-
-import com.example.demo.dtos.ChangeTemplateModel;
-import com.example.demo.dtos.ChangeTemplateFieldItemDto;
 
 import java.util.List;
 
@@ -13,7 +13,7 @@ import java.util.List;
 public interface ChangeTemplateService {
     /**
      * Finds paginated Change Templates based on the provided request.
-     * 
+     *
      * @param paginationRequest The pagination request object.
      * @return A page of ChangeTemplateModel.
      */
@@ -21,14 +21,14 @@ public interface ChangeTemplateService {
 
     /**
      * Deletes Change Templates by their IDs.
-     * 
+     *
      * @param ids The list of IDs to delete.
      */
     void deleteByIds(List<Long> ids);
 
     /**
      * Finds a Change Template by its ID.
-     * 
+     *
      * @param id The ID of the Change Template.
      * @return The ChangeTemplateModel found, or null if not found.
      */
@@ -36,7 +36,7 @@ public interface ChangeTemplateService {
 
     /**
      * Saves a new Change Template.
-     * 
+     *
      * @param changeTemplateModel The ChangeTemplateModel to save.
      * @return The saved ChangeTemplateModel.
      */
@@ -44,7 +44,7 @@ public interface ChangeTemplateService {
 
     /**
      * Saves an existing Change Template by ID.
-     * 
+     *
      * @param id                  The ID of the Change Template to update.
      * @param changeTemplateModel The updated ChangeTemplateModel.
      * @return The saved ChangeTemplateModel.
@@ -59,5 +59,27 @@ public interface ChangeTemplateService {
      * @param size             The number of items per page.
      * @return A page of field item data.
      */
-    Page<ChangeTemplateFieldItemDto> getPaginatedFieldItems(Long changeTemplateId, int page, int size);
+    Page<ChangeTemplateFieldItemDto> getPaginatedFieldItems(Long changeTemplateId, int page,
+                                                            int size);
+
+
+    /**
+     * Gets detail with roles.
+     *
+     * @param id       the id
+     * @param userPage the user page
+     * @param userSize the user size
+     * @return the detail with roles
+     */
+    ChangeTemplateModel getDetailWithRoles(Long id, int userPage, int userSize);
+
+
+    /**
+     * Gets detail with roles.
+     *
+     * @param id         the id
+     * @param userPaging the user paging
+     * @return the detail with roles
+     */
+    ChangeTemplateModel getDetailWithRoles(Long id, PagingRequestModel userPaging);
 }

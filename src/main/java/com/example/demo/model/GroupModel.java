@@ -1,4 +1,4 @@
-package com.example.demo.dtos;
+package com.example.demo.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,9 +9,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class GroupDto {
+public class GroupModel {
     private Long id;
     private String name;
     private String description;
     private Boolean isChangeRole;
+    private String groupType;
 }

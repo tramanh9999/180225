@@ -1,7 +1,8 @@
 package com.example.demo.controller;
 
-import com.example.demo.dtos.ChangeTemplateModel;
-import com.example.demo.dtos.ChangeTemplateFieldItemDto;
+import com.example.demo.model.ChangeTemplateFieldItemDto;
+import com.example.demo.model.ChangeTemplateModel;
+import com.example.demo.model.PagingRequestModel;
 import com.example.demo.service.ChangeTemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -23,12 +24,13 @@ public class ChangeTemplateController {
     /**
      * Endpoint to find paginated Change Templates.
      *
-     * @param paginationRequest The pagination request.
+     * @param pagingRequest The pagination request.
      * @return A page of ChangeTemplateModel.
      */
     @GetMapping("/pagings")
-    public ResponseEntity<Page<ChangeTemplateModel>> findPagings(@RequestBody Object paginationRequest) {
-        Page<ChangeTemplateModel> pagings = changeTemplateService.findPagings(paginationRequest);
+    public ResponseEntity<Page<ChangeTemplateModel>> findPagings(
+            @RequestBody PagingRequestModel pagingRequest) {
+        Page<ChangeTemplateModel> pagings = changeTemplateService.findPagings(pagingRequest);
         return ResponseEntity.ok(pagings);
     }
 
@@ -63,7 +65,8 @@ public class ChangeTemplateController {
      * @return ResponseEntity with the saved ChangeTemplateModel.
      */
     @PostMapping
-    public ResponseEntity<ChangeTemplateModel> save(@RequestBody ChangeTemplateModel changeTemplateModel) {
+    public ResponseEntity<ChangeTemplateModel> save(
+            @RequestBody ChangeTemplateModel changeTemplateModel) {
         ChangeTemplateModel savedChangeTemplate = changeTemplateService.save(changeTemplateModel);
         return ResponseEntity.ok(savedChangeTemplate);
     }
@@ -76,27 +79,65 @@ public class ChangeTemplateController {
      * @return ResponseEntity with the saved ChangeTemplateModel.
      */
     @PutMapping("/{id}")
-    public ResponseEntity<ChangeTemplateModel> save(@PathVariable Long id,
-            @RequestBody ChangeTemplateModel changeTemplateModel) {
-        ChangeTemplateModel savedChangeTemplate = changeTemplateService.save(id, changeTemplateModel);
+    public ResponseEntity<ChangeTemplateModel> save(@PathVariable Long id, @RequestBody
+    ChangeTemplateModel changeTemplateModel) {
+        ChangeTemplateModel savedChangeTemplate =
+                changeTemplateService.save(id, changeTemplateModel);
         return ResponseEntity.ok(savedChangeTemplate);
     }
 
+
     /**
-     * Endpoint to get paginated field item data for a Change Template.
+     * Gets paginated field items.
      *
-     * @param changeTemplateId The ID of the Change Template.
-     * @param page             The page number (0-indexed).
-     * @param size             The number of items per page.
-     * @return A page of field item data.
+     * @param changeTemplateId the change template id
+     * @param pagingRequest    the paging request
+     * @return the paginated field items
      */
     @GetMapping("/{changeTemplateId}/field-items")
     public ResponseEntity<Page<ChangeTemplateFieldItemDto>> getPaginatedFieldItems(
             @PathVariable Long changeTemplateId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        Page<ChangeTemplateFieldItemDto> fieldItemsPage = changeTemplateService.getPaginatedFieldItems(changeTemplateId,
-                page, size);
+            @RequestBody(required = false) PagingRequestModel pagingRequest) {
+        int page = pagingRequest != null ? pagingRequest.getPage() : 0;
+        int size = pagingRequest != null ? pagingRequest.getSize() : 10;
+        Page<ChangeTemplateFieldItemDto> fieldItemsPage =
+                changeTemplateService.getPaginatedFieldItems(changeTemplateId, page, size);
         return ResponseEntity.ok(fieldItemsPage);
     }
+
+    /**
+     * Endpoint to get detail with roles for a Change Template.
+     *
+     * @param id         The ID of the Change Template.
+     * @param userPaging The paging request for users.
+     * @return ResponseEntity with the ChangeTemplateModel.
+     */
+    @GetMapping("/{id}/detail")
+    public ResponseEntity<ChangeTemplateModel> getDetailWithRoles(@PathVariable Long id,
+                                                                  @RequestBody(required = false)
+                                                                  PagingRequestModel userPaging) {
+        int userPage = userPaging != null ? userPaging.getPage() : 0;
+        int userSize = userPaging != null ? userPaging.getSize() : 10;
+        ChangeTemplateModel model =
+                changeTemplateService.getDetailWithRoles(id, userPage, userSize);
+        if (model == null) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(model);
+    }
+
+    /**
+     * Endpoint to get detail with roles for a Change Template.
+     *
+     * @param id         The ID of the Change Template.
+     * @param userPaging The paging request for users.
+     * @return ResponseEntity with the ChangeTemplateModel.
+     */
+    @GetMapping("/{id}/detail")
+    public ResponseEntity<ChangeTemplateModel> getDetailWithRolesNew(@PathVariable Long id,
+                                                                     @RequestBody(required = false)
+                                                                     PagingRequestModel userPaging) {
+        ChangeTemplateModel model = changeTemplateService.getDetailWithRoles(id, userPaging);
+        if (model == null) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(model);
+    }
+
 }

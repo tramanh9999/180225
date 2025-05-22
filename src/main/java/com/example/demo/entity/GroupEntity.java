@@ -13,6 +13,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import com.example.demo.enums.GroupType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
@@ -44,4 +47,8 @@ public class GroupEntity extends BaseEntity<Long> {
     @Basic
     @Column(name = "is_change_role")
     private Boolean isChangeRole;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "group_type", length = 50)
+    private GroupType groupType;
 }
