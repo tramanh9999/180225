@@ -1,18 +1,7 @@
 package com.example.demo.entity;
 
-import jakarta.persistence.Basic;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
@@ -24,24 +13,23 @@ import lombok.NoArgsConstructor;
 public class ChangeTemplateRoleEntity extends BaseEntity<Long> {
 
     @Id
-    @Column(name = "id")
-    @SequenceGenerator(name = "CHANGE_TEMPLATE_ROLE_SEQ", sequenceName = "CHANGE_TEMPLATE_ROLE_SEQ", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "CHANGE_TEMPLATE_ROLE_SEQ")
+    @Column(name = "ID")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Basic
-    @Column(name = "change_template_id")
+    @Column(name = "CHANGE_TEMPLATE_ID")
     private Long changeTemplateId;
 
     @Basic
-    @Column(name = "group_id")
+    @Column(name = "GROUP_ID")
     private Long groupId;
 
     @Basic
-    @Column(name = "level") // "LEVEL" can be a reserved keyword in some SQL dialects
+    @Column(name = "LEVEL") // "LEVEL" can be a reserved keyword in some SQL dialects
     private Integer level;
 
     @Basic
-    @Column(name = "order") // "ORDER" is a reserved keyword in SQL
+    @Column(name = "ORDER") // "ORDER" is a reserved keyword in SQL
     private Integer roleOrder;
 }

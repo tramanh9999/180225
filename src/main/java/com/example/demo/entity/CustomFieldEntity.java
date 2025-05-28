@@ -29,8 +29,7 @@ public class CustomFieldEntity extends BaseEntity<Long> {
 
     @Id
     @Column(name = "ID")
-    @SequenceGenerator(name = "CUSTOM_FIELD_SEQ", sequenceName = "CUSTOM_FIELD_SEQ", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "CUSTOM_FIELD_SEQ")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Basic

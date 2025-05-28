@@ -8,6 +8,11 @@ public class BusinessException extends RuntimeException {
         this.errorCodeCommon = errorCodeCommon;
     }
 
+    public BusinessException(ErrorCodeCommon errorCodeCommon, String customMessage) {
+        super(customMessage);
+        this.errorCodeCommon = errorCodeCommon;
+    }
+
     public ErrorCodeCommon getErrorCodeCommon() {
         return errorCodeCommon;
     }

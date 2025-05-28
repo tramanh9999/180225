@@ -2,11 +2,11 @@ package com.example.demo.mapper;
 
 import com.example.demo.entity.ChangeTemplateRoleEntity;
 import com.example.demo.model.ChangeTemplateRoleModel;
-
 import org.mapstruct.Mapper;
-import java.util.List;
+import org.springframework.stereotype.Component;
 
 @Mapper(componentModel = "spring")
+@Component
 public interface ChangeTemplateRoleMapper {
     ChangeTemplateRoleModel toModel(ChangeTemplateRoleEntity entity);
 

@@ -127,15 +127,12 @@ public class ChangeTemplateController {
     /**
      * Endpoint to get detail with roles for a Change Template.
      *
-     * @param id         The ID of the Change Template.
-     * @param userPaging The paging request for users.
+     * @param id The ID of the Change Template.
      * @return ResponseEntity with the ChangeTemplateModel.
      */
-    @GetMapping("/{id}/detail")
-    public ResponseEntity<ChangeTemplateModel> getDetailWithRolesNew(@PathVariable Long id,
-                                                                     @RequestBody(required = false)
-                                                                     PagingRequestModel userPaging) {
-        ChangeTemplateModel model = changeTemplateService.getDetailWithRoles(id, userPaging);
+    @GetMapping("/{id}/detail-new")
+    public ResponseEntity<ChangeTemplateModel> getDetailWithRolesNew(@PathVariable Long id) {
+        ChangeTemplateModel model = changeTemplateService.getDetailWithRoles(id);
         if (model == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(model);
     }

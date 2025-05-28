@@ -2,11 +2,13 @@ package com.example.demo.mapper;
 
 import com.example.demo.entity.CustomFieldValueEntity;
 import com.example.demo.model.CustomFieldValueDto;
-
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.springframework.stereotype.Component;
 
 @Mapper(componentModel = "spring")
+
+@Component
 public interface CustomFieldValueMapper {
 
     @Mapping(target = "id", source = "id")

@@ -2,7 +2,6 @@ package com.example.demo.service;
 
 import com.example.demo.model.ChangeTemplateFieldItemDto;
 import com.example.demo.model.ChangeTemplateModel;
-import com.example.demo.model.PagingRequestModel;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -77,9 +76,8 @@ public interface ChangeTemplateService {
     /**
      * Gets detail with roles.
      *
-     * @param id         the id
-     * @param userPaging the user paging
+     * @param id the id
      * @return the detail with roles
      */
-    ChangeTemplateModel getDetailWithRoles(Long id, PagingRequestModel userPaging);
+    ChangeTemplateModel getDetailWithRoles(Long id);
 }

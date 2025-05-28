@@ -6,7 +6,11 @@ import com.example.demo.entity.ChangeTemplateRoleUserEntity;
 import com.example.demo.mapper.ChangeTemplateFieldItemMapper;
 import com.example.demo.mapper.ChangeTemplateMapper;
 import com.example.demo.mapper.ChangeTemplateRoleMapper;
-import com.example.demo.model.*;
+import com.example.demo.model.ChangeTemplateFieldItemDto;
+import com.example.demo.model.ChangeTemplateModel;
+import com.example.demo.model.ChangeTemplateRoleModel;
+import com.example.demo.model.GroupModel;
+import com.example.demo.model.LevelGroupModel;
 import com.example.demo.repository.*;
 import com.example.demo.service.dto.BusinessException;
 import com.example.demo.service.dto.ErrorCodeCommon;
@@ -16,7 +20,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -85,30 +88,39 @@ public class ChangeTemplateServiceImpl implements ChangeTemplateService {
     @Override
     public ChangeTemplateModel findById(Long id) {
         var entity = changeTemplateRepository.findById(id).orElse(null);
-        if (entity == null) return null;
+        if (entity == null)
+            return null;
         ChangeTemplateModel model = changeTemplateMapper.toDto(entity);
         // Lấy danh sách role order by level, roleOrder
-        List<ChangeTemplateRoleEntity> roleEntities =
-                changeTemplateRoleRepository.findByChangeTemplateIdOrderByLevelAscRoleOrderAsc(id);
-        // Lấy user cho từng role (paging mặc định 0,10)
-        int userPage = 0;
-        int userSize = 10;
-        List<ChangeTemplateRoleModel> roleModels = roleEntities.stream().map(role -> {
-            ChangeTemplateRoleModel modelRole = changeTemplateRoleMapper.toModel(role);
-            int offset = userPage * userSize;
-            List<String> users =
-                    changeTemplateRoleUserRepository.findUsernamesByRoleId(role.getId(),
-                            PagingRequestModel.builder().page(userPage).size(userSize).build());
-            modelRole.setUsers(users);
-            return modelRole;
-        }).toList();
-        // Gom nhóm role cùng level
-        Map<Integer, List<ChangeTemplateRoleModel>> groupByLevel = roleModels.stream()
-                .collect(java.util.stream.Collectors.groupingBy(ChangeTemplateRoleModel::getLevel));
-        List<LevelGroupModel> levelGroups =
-                groupByLevel.entrySet().stream().sorted(Map.Entry.comparingByKey())
-                        .map(e -> LevelGroupModel.builder().level(e.getKey()).roles(e.getValue())
-                                .build()).toList();
+        List<ChangeTemplateRoleEntity> roleEntities = changeTemplateRoleRepository
+                .findByChangeTemplateIdOrderByLevelAscRoleOrderAsc(id);
+        // Gom nhóm role theo level
+        Map<Integer, List<ChangeTemplateRoleEntity>> groupByLevel = roleEntities.stream()
+                .collect(Collectors.groupingBy(ChangeTemplateRoleEntity::getLevel));
+        List<LevelGroupModel> levelGroups = groupByLevel.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .map(e -> {
+                    String levelId = String.valueOf(e.getKey());
+                    String title = "Level " + e.getKey();
+                    // Lấy danh sách groupId ở level này
+                    List<Long> groupIds = e.getValue().stream().map(ChangeTemplateRoleEntity::getGroupId)
+                            .collect(Collectors.toList());
+                    List<GroupModel> groups = groupRepository.findAllByIdIn(groupIds).stream().map(g -> {
+                        GroupModel gm = new GroupModel();
+                        gm.setId(g.getId());
+                        gm.setName(g.getName());
+                        gm.setDescription(g.getDescription());
+                        gm.setIsChangeRole(g.getIsChangeRole());
+                        gm.setGroupType(g.getGroupType() != null ? g.getGroupType().getValue() : null);
+                        return gm;
+                    }).collect(Collectors.toList());
+                    return LevelGroupModel.builder()
+                            .id(levelId)
+                            .title(title)
+                            .changeRoles(groups)
+                            .build();
+                })
+                .collect(Collectors.toList());
         model.setLevels(levelGroups);
         return model;
     }
@@ -137,85 +149,56 @@ public class ChangeTemplateServiceImpl implements ChangeTemplateService {
         if (model.getName() == null || model.getName().trim().isEmpty()) {
             throw new BusinessException(ErrorCodeCommon.NAME_REQUIRED);
         }
+        validateRoles(model);
+    }
+
+    public void validateRoles(ChangeTemplateModel model) {
         if (model.getLevels() != null) {
-            Set<Long> groupIds = new HashSet<>();
-            Set<String> usernames = new HashSet<>();
-            for (LevelGroupModel group : model.getLevels()) {
-                for (ChangeTemplateRoleModel role : group.getRoles()) {
-                    if (role.getGroupId() == null) {
-                        throw new BusinessException(ErrorCodeCommon.ROLE_GROUP_ID_REQUIRED);
-                    }
-                    groupIds.add(role.getGroupId());
-                    if (role.getLevel() == null) {
-                        throw new BusinessException(ErrorCodeCommon.ROLE_LEVEL_REQUIRED);
-                    }
-                    if (role.getUsers() != null) {
-                        for (String user : role.getUsers()) {
-                            if (user == null || user.trim().isEmpty()) {
-                                throw new BusinessException(ErrorCodeCommon.USERNAME_REQUIRED);
-                            }
-                            usernames.add(user);
-                        }
-                    }
-                }
-            }
+            Set<Long> groupIds = model.getLevels().stream()
+                    .flatMap(level -> level.getChangeRoles().stream())
+                    .map(GroupModel::getId)
+                    .collect(Collectors.toSet());
             // Validate groupId tồn tại
-            List<Long> foundGroupIds =
-                    groupRepository.findAllByIdIn(groupIds.stream().toList()).stream()
-                            .map(g -> g.getId()).toList();
-            for (Long id : groupIds) {
-                if (!foundGroupIds.contains(id)) {
-                    throw new BusinessException(ErrorCodeCommon.GROUP_ID_NOT_FOUND);
-                }
-            }
-            // Validate username tồn tại
-            List<String> foundUsernames =
-                    userRepository.findAllByUsernameIn(usernames.stream().toList()).stream()
-                            .map(u -> u.getUsername()).toList();
-            for (String username : usernames) {
-                if (!foundUsernames.contains(username)) {
-                    throw new BusinessException(ErrorCodeCommon.USERNAME_NOT_FOUND);
-                }
-            }
+            List<Long> foundGroupIds = groupRepository.findAllByIdIn(groupIds.stream().toList()).stream()
+                    .map(g -> g.getId()).toList();
+            groupIds.stream().filter(id -> !foundGroupIds.contains(id)).findFirst()
+                    .ifPresent(id -> {
+                        throw new BusinessException(ErrorCodeCommon.GROUP_ID_NOT_FOUND);
+                    });
         }
     }
 
-    private ChangeTemplateModel saveInternal(ChangeTemplateModel changeTemplateModel) {
+    public ChangeTemplateModel saveInternal(ChangeTemplateModel changeTemplateModel) {
         validateChangeTemplateModel(changeTemplateModel);
         var entity = changeTemplateMapper.toEntity(changeTemplateModel);
         var savedEntity = changeTemplateRepository.save(entity);
         // Xử lý lưu levels
-        if (changeTemplateModel.getLevels() != null) {
-            changeTemplateRoleRepository.deleteByChangeTemplateId(savedEntity.getId());
-            // Lưu mới
-            List<ChangeTemplateRoleEntity> roleEntities = changeTemplateModel.getLevels().stream()
-                    .flatMap(group -> group.getRoles().stream()).map(modelRole -> {
-                        ChangeTemplateRoleEntity e = changeTemplateRoleMapper.toEntity(modelRole);
-                        e.setChangeTemplateId(savedEntity.getId());
-                        return e;
-                    }).collect(Collectors.toList());
-            List<ChangeTemplateRoleEntity> savedRoles =
-                    changeTemplateRoleRepository.saveAll(roleEntities);
-            // Lưu users cho từng role
-            int roleIndex = 0;
-            for (LevelGroupModel group : changeTemplateModel.getLevels()) {
-                for (ChangeTemplateRoleModel modelRole : group.getRoles()) {
-                    ChangeTemplateRoleEntity roleEntity = savedRoles.get(roleIndex++);
-                    changeTemplateRoleUserRepository.deleteByChangeTemplateRoleId(
-                            roleEntity.getId());
-                    if (modelRole.getUsers() != null && !modelRole.getUsers().isEmpty()) {
-                        List<ChangeTemplateRoleUserEntity> userEntities =
-                                modelRole.getUsers().stream()
-                                        .map(username -> ChangeTemplateRoleUserEntity.builder()
-                                                .changeTemplateRoleId(roleEntity.getId())
-                                                .username(username).build())
-                                        .collect(Collectors.toList());
-                        changeTemplateRoleUserRepository.saveAll(userEntities);
-                    }
-                }
-            }
-        }
+        saveRoles(savedEntity.getId(), changeTemplateModel);
         return changeTemplateMapper.toDto(savedEntity);
+    }
+
+    /**
+     * Lưu roles và users cho template
+     *
+     * @param changeTemplateId    id của template
+     * @param changeTemplateModel model template
+     */
+    public void saveRoles(Long changeTemplateId, ChangeTemplateModel changeTemplateModel) {
+        if (changeTemplateModel.getLevels() != null) {
+            changeTemplateRoleRepository.deleteByChangeTemplateId(changeTemplateId);
+            // Lưu mới roles
+            List<ChangeTemplateRoleEntity> roleEntities = changeTemplateModel.getLevels().stream()
+                    .flatMap(level -> level.getChangeRoles().stream().map(group -> {
+                        ChangeTemplateRoleEntity e = new ChangeTemplateRoleEntity();
+                        e.setChangeTemplateId(changeTemplateId);
+                        e.setGroupId(group.getId());
+                        e.setLevel(Integer.valueOf(level.getId()));
+                        e.setRoleOrder(0); // Nếu có logic order thì set lại
+                        return e;
+                    }))
+                    .collect(Collectors.toList());
+            changeTemplateRoleRepository.saveAll(roleEntities);
+        }
     }
 
     /**
@@ -223,11 +206,11 @@ public class ChangeTemplateServiceImpl implements ChangeTemplateService {
      */
     @Override
     public Page<ChangeTemplateFieldItemDto> getPaginatedFieldItems(Long changeTemplateId, int page,
-                                                                   int size) {
+            int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<ChangeTemplateFieldItemEntity> entityPage =
-                changeTemplateFieldItemRepository.findByChangeTemplateId(changeTemplateId,
-                        pageable);
+        Page<ChangeTemplateFieldItemEntity> entityPage = changeTemplateFieldItemRepository.findByChangeTemplateId(
+                changeTemplateId,
+                pageable);
 
         // Map the entity page to a DTO page
         return entityPage.map(changeTemplateFieldItemMapper::toDto);
@@ -239,30 +222,40 @@ public class ChangeTemplateServiceImpl implements ChangeTemplateService {
     }
 
     @Override
-    public ChangeTemplateModel getDetailWithRoles(Long id, PagingRequestModel userPaging) {
+    public ChangeTemplateModel getDetailWithRoles(Long id) {
         var entity = changeTemplateRepository.findById(id).orElse(null);
-        if (entity == null) return null;
+        if (entity == null)
+            return null;
         ChangeTemplateModel model = changeTemplateMapper.toDto(entity);
         // Lấy danh sách role order by level, roleOrder
-        List<ChangeTemplateRoleEntity> roleEntities =
-                changeTemplateRoleRepository.findByChangeTemplateIdOrderByLevelAscRoleOrderAsc(id);
-        // Lấy user cho từng role (paging)
-        List<ChangeTemplateRoleModel> roleModels = roleEntities.stream().map(role -> {
-            ChangeTemplateRoleModel modelRole = changeTemplateRoleMapper.toModel(role);
-            // Paging user
-            List<String> users =
-                    changeTemplateRoleUserRepository.findUsernamesByRoleId(role.getId(),
-                            userPaging);
-            modelRole.setUsers(users);
-            return modelRole;
-        }).toList();
-        // Gom nhóm role cùng level
-        Map<Integer, List<ChangeTemplateRoleModel>> groupByLevel = roleModels.stream()
-                .collect(java.util.stream.Collectors.groupingBy(ChangeTemplateRoleModel::getLevel));
-        List<LevelGroupModel> levelGroups =
-                groupByLevel.entrySet().stream().sorted(Map.Entry.comparingByKey())
-                        .map(e -> LevelGroupModel.builder().level(e.getKey()).roles(e.getValue())
-                                .build()).toList();
+        List<ChangeTemplateRoleEntity> roleEntities = changeTemplateRoleRepository
+                .findByChangeTemplateIdOrderByLevelAscRoleOrderAsc(id);
+        // Gom nhóm role theo level
+        Map<Integer, List<ChangeTemplateRoleEntity>> groupByLevel = roleEntities.stream()
+                .collect(Collectors.groupingBy(ChangeTemplateRoleEntity::getLevel));
+        List<LevelGroupModel> levelGroups = groupByLevel.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .map(e -> {
+                    String levelId = String.valueOf(e.getKey());
+                    String title = "Level " + e.getKey();
+                    List<Long> groupIds = e.getValue().stream().map(ChangeTemplateRoleEntity::getGroupId)
+                            .collect(Collectors.toList());
+                    List<GroupModel> groups = groupRepository.findAllByIdIn(groupIds).stream().map(g -> {
+                        GroupModel gm = new GroupModel();
+                        gm.setId(g.getId());
+                        gm.setName(g.getName());
+                        gm.setDescription(g.getDescription());
+                        gm.setIsChangeRole(g.getIsChangeRole());
+                        gm.setGroupType(g.getGroupType() != null ? g.getGroupType().getValue() : null);
+                        return gm;
+                    }).collect(Collectors.toList());
+                    return LevelGroupModel.builder()
+                            .id(levelId)
+                            .title(title)
+                            .changeRoles(groups)
+                            .build();
+                })
+                .collect(Collectors.toList());
         model.setLevels(levelGroups);
         return model;
     }

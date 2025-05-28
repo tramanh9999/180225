@@ -1,22 +1,11 @@
 package com.example.demo.entity;
 
-import jakarta.persistence.Basic;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.RequiredArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@Table(name = "change_template")
+@Table(name = "CHANGE_TEMPLATE")
 @Data
 @AllArgsConstructor
 @RequiredArgsConstructor
@@ -24,9 +13,8 @@ import lombok.RequiredArgsConstructor;
 public class ChangeTemplateEntity extends BaseEntity<Long> {
 
     @Id
-    @Column(name = "id")
-    @SequenceGenerator(name = "CHANGE_TEMPLATE_SEQ", sequenceName = "CHANGE_TEMPLATE_SEQ", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "CHANGE_TEMPLATE_SEQ")
+    @Column(name = "ID")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Basic
@@ -38,14 +26,14 @@ public class ChangeTemplateEntity extends BaseEntity<Long> {
     private String description;
 
     @Basic
-    @Column(name = "notice", length = 255) // Assuming VARCHAR2 default length or specify
+    @Column(name = "NOTICE", length = 255) // Assuming VARCHAR2 default length or specify
     private String notice;
 
     @Basic
-    @Column(name = "isActive")
+    @Column(name = "IS_ACTIVE")
     private Integer isActive; // Assuming NUMBER maps to Integer, 1 for true, 0 for false
 
     @Basic
-    @Column(name = "deleted")
+    @Column(name = "DELETED")
     private Integer deleted; // 0 for not deleted, 1 for deleted
 }

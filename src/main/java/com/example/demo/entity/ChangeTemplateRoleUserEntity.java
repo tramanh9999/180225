@@ -24,9 +24,8 @@ import lombok.NoArgsConstructor;
 public class ChangeTemplateRoleUserEntity extends BaseEntity<Long> {
 
     @Id
-    @Column(name = "id")
-    @SequenceGenerator(name = "CHANGE_TEMPLATE_ROLE_USER_SEQ", sequenceName = "CHANGE_TEMPLATE_ROLE_USER_SEQ", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "CHANGE_TEMPLATE_ROLE_USER_SEQ")
+    @Column(name = "ID")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Basic

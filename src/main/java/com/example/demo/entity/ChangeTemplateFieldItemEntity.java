@@ -25,8 +25,7 @@ public class ChangeTemplateFieldItemEntity extends BaseEntity<Long> {
 
     @Id
     @Column(name = "ID")
-    @SequenceGenerator(name = "CHANGE_TEMPLATE_FIELD_ITEM_SEQ", sequenceName = "CHANGE_TEMPLATE_FIELD_ITEM_SEQ", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "CHANGE_TEMPLATE_FIELD_ITEM_SEQ")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Basic
