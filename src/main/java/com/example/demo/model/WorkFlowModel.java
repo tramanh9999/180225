@@ -1,5 +1,7 @@
 package com.example.demo.model;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,10 +11,13 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class GroupModel {
+public class WorkFlowModel {
     private Long id;
     private String name;
     private String description;
-    private Boolean isChangeRole;
-    private String groupType;
+    private Boolean isActive;
+    private LocalDateTime createdDate;
+    private String createdBy;
+    private LocalDateTime modifiedDate;
+    private String modifiedBy;
 }

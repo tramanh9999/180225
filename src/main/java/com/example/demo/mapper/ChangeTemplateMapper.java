@@ -1,6 +1,6 @@
 package com.example.demo.mapper;
 
-import com.example.demo.entity.ChangeTemplateEntity;
+import com.example.demo.entity.entity.ChangeTemplateEntity;
 import com.example.demo.model.ChangeTemplateModel;
 import org.mapstruct.Mapper;
 import org.springframework.stereotype.Component;

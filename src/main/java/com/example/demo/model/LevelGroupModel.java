@@ -28,5 +28,5 @@ public class LevelGroupModel {
     /**
      * Danh sách group thực hiện phê duyệt ở cấp này
      */
-    private List<GroupModel> changeRoles;
+    private List<SysGroupModel> changeRoles;
 }

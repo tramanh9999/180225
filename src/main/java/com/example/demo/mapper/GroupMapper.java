@@ -1,12 +1,11 @@
 package com.example.demo.mapper;
 
-import com.example.demo.entity.GroupEntity;
-import com.example.demo.model.GroupModel;
+import com.example.demo.entity.entity.SysGroupEntity;
 import com.example.demo.enums.GroupType;
+import com.example.demo.model.SysGroupModel;
 import com.example.demo.service.dto.BusinessException;
 import com.example.demo.service.dto.ErrorCodeCommon;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 import org.springframework.stereotype.Component;
 
@@ -16,18 +15,11 @@ public interface GroupMapper {
 
     GroupMapper INSTANCE = Mappers.getMapper(GroupMapper.class);
 
-    @Mapping(source = "isChangeRole", target = "isChangeRole")
-    @Mapping(target = "groupType", expression = "java(entity.getGroupType() != null ? entity.getGroupType().getValue() : null)")
-    GroupModel toDto(GroupEntity entity);
-
-    @Mapping(source = "isChangeRole", target = "isChangeRole")
-    @Mapping(target = "groupType", ignore = true)
-    GroupEntity toEntity(GroupModel dto);
-
     /**
      * Hàm parse enum generic, dùng cho mọi enum, throw BusinessException nếu lỗi.
      */
-    static <E extends Enum<E>> E parseEnum(Class<E> enumClass, String value, ErrorCodeCommon errorCode) {
+    static <E extends Enum<E>> E parseEnum(Class<E> enumClass, String value,
+                                           ErrorCodeCommon errorCode) {
         try {
             for (E constant : enumClass.getEnumConstants()) {
                 if (constant.name().equalsIgnoreCase(value)) {
@@ -53,4 +45,8 @@ public interface GroupMapper {
     static GroupType parseGroupType(String value) {
         return parseEnum(GroupType.class, value, ErrorCodeCommon.INVALID_ENUM_VALUE);
     }
+
+    SysGroupModel toDto(SysGroupEntity entity);
+
+    SysGroupEntity toEntity(SysGroupModel dto);
 }

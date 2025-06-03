@@ -22,4 +22,7 @@ public class ChangeRequestRoleUserEntity extends BaseEntity<Long> {
     @Column(name = "CAB_GROUP_ORDER")
     private Integer cabGroupOrder;
 
+    @Column(name = "CHANGE_REQUEST_ID")
+    private Long changeRequestId;
+
 }

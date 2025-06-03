@@ -1,19 +1,23 @@
 package com.example.demo.service.dto;
 
+import lombok.Data;
+
+import java.text.MessageFormat;
+
+
+@Data
 public class BusinessException extends RuntimeException {
-    private final ErrorCodeCommon errorCodeCommon;
+    private final ErrorCodeCommon code;
 
-    public BusinessException(ErrorCodeCommon errorCodeCommon) {
-        super(errorCodeCommon.getMessage());
-        this.errorCodeCommon = errorCodeCommon;
+    private String customMessage;
+
+    public BusinessException(ErrorCodeCommon code) {
+        super(code.getMessage());
+        this.code = code;
     }
 
-    public BusinessException(ErrorCodeCommon errorCodeCommon, String customMessage) {
-        super(customMessage);
-        this.errorCodeCommon = errorCodeCommon;
-    }
-
-    public ErrorCodeCommon getErrorCodeCommon() {
-        return errorCodeCommon;
+    public BusinessException(ErrorCodeCommon code, Object... params) {
+        this.customMessage = MessageFormat.format(code.getCode(), params);
+        this.code = code;
     }
 }

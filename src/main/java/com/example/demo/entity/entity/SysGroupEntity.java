@@ -4,10 +4,8 @@ import com.example.demo.enums.GroupType;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.List;
-
 @Entity
-@Table(name = "GROUPS") // "GROUP" is a reserved keyword in SQL
+@Table(name = "SYS_GROUP") // "GROUP" is a reserved keyword in SQL
 @Data
 public class SysGroupEntity {
 
@@ -30,10 +28,4 @@ public class SysGroupEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "GROUP_TYPE")
     private GroupType groupType;
-
-    @OneToMany(mappedBy = "group")
-    private List<ChangeTemplateRoleEntity> templateRoles;
-
-    @OneToMany(mappedBy = "group")
-    private List<ChangeFlowNodeGroupEntity> flowNodeGroups;
 }

@@ -3,8 +3,9 @@ package com.example.demo.controller;
 import com.example.demo.model.ChangeTemplateFieldItemDto;
 import com.example.demo.model.ChangeTemplateModel;
 import com.example.demo.model.PagingRequestModel;
+import com.example.demo.service.ChangeRequestRoleService;
 import com.example.demo.service.ChangeTemplateService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,10 +17,12 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/change-template")
+@RequiredArgsConstructor
 public class ChangeTemplateController {
 
-    @Autowired
-    private ChangeTemplateService changeTemplateService;
+    private final ChangeTemplateService changeTemplateService;
+    private final ChangeRequestRoleService changeRequestRoleService;
+
 
     /**
      * Endpoint to find paginated Change Templates.
@@ -136,5 +139,4 @@ public class ChangeTemplateController {
         if (model == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(model);
     }
-
 }
