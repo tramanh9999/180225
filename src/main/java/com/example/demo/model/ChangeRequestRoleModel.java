@@ -12,17 +12,16 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ChangeRequestRoleModel extends BaseDto<Long> {
-
+public class ChangeRequestRoleModel extends BaseModel {
     private Long id;
-
     private Long changeFlowNodeId;
-
     private Long changeRequestWorkflowId;
-
-    private Integer cabGroup;
-
     private Long changeRequestId;
-
     private List<ChangeRequestRoleUserModel> users;
+
+    private ChangeFlowNodeModel changeFlowNode;
+
+    private List<ChangeRequestRoleUserModel> cabUserGroups;
+
+    private List<List<ChangeRequestRoleUserModel>> groupedCabUserGroups;
 }

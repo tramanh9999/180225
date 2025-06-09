@@ -12,7 +12,7 @@ import java.util.List;
 @Repository
 public interface ChangeFlowNodeRepository
         extends JpaRepository<ChangeFlowNodeEntity, Long>, ChangeFlowNodeRepositoryCustom {
-    /**
+    /*
      * Find all ChangeFlowNodeEntity by their IDs.
      *
      * @param ids the list of IDs to search for

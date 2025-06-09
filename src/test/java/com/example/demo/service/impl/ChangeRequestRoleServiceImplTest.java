@@ -20,11 +20,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -63,17 +63,17 @@ class ChangeRequestRoleServiceImplTest {
         // [EN] Expected: The method should save the roles and associated users, and then verify that the necessary methods of the dependencies are called.
         Long changeRequestId = 1L;
         List<ChangeRequestRoleModel> roles = new ArrayList<>();
-        ChangeRequestRoleModel role1 = ChangeRequestRoleModel.builder()
-                .changeFlowNodeId(10L)
-                .changeRequestWorkflowId(20L)
-                .cabGroup(1)
-                .users(List.of(ChangeRequestRoleUserModel.builder().username("user1").build()))
-                .build();
+        ChangeRequestRoleModel role1 =
+                ChangeRequestRoleModel.builder().changeFlowNodeId(10L).changeRequestWorkflowId(20L)
+                        .users(List.of(
+                                ChangeRequestRoleUserModel.builder().username("user1").build()))
+                        .build();
         roles.add(role1);
         ChangeRequestRoleEntity roleEntity = new ChangeRequestRoleEntity();
         roleEntity.setId(1L);
 
-        when(changeRequestRoleMapper.toEntity(any(ChangeRequestRoleModel.class))).thenReturn(roleEntity);
+        when(changeRequestRoleMapper.toEntity(any(ChangeRequestRoleModel.class))).thenReturn(
+                roleEntity);
         when(repository.save(any(ChangeRequestRoleEntity.class))).thenReturn(roleEntity);
         doNothing().when(changeRequestRoleUserService).saveAll(anyList());
 
@@ -139,15 +139,21 @@ class ChangeRequestRoleServiceImplTest {
         roleEntity.setId(1L);
         roles.add(roleEntity);
         List<ChangeRequestRoleUserModel> users = new ArrayList<>();
-        ChangeRequestRoleUserModel userModel = ChangeRequestRoleUserModel.builder().changeRequestRoleId(1L).username("user1").build();
+        ChangeRequestRoleUserModel userModel =
+                ChangeRequestRoleUserModel.builder().changeRequestRoleId(1L).username("user1")
+                        .build();
         users.add(userModel);
 
         when(repository.existsByChangeRequestId(changeRequestId)).thenReturn(true);
         when(repository.findAllByChangeRequestId(changeRequestId)).thenReturn(roles);
-        when(changeRequestRoleUserService.findAllByChangeRequestId(changeRequestId)).thenReturn(users);
-        when(changeRequestRoleMapper.toDto(any(ChangeRequestRoleEntity.class), anyList())).thenReturn(ChangeRequestRoleModel.builder().id(1L).users(users).build());
+        when(changeRequestRoleUserService.findAllByChangeRequestId(changeRequestId)).thenReturn(
+                users);
+        when(changeRequestRoleMapper.toDto(any(ChangeRequestRoleEntity.class),
+                anyList())).thenReturn(
+                ChangeRequestRoleModel.builder().id(1L).users(users).build());
 
-        List<ChangeRequestRoleModel> result = changeRequestRoleService.findAllByChangeRequestId(changeRequestId);
+        List<ChangeRequestRoleModel> result =
+                changeRequestRoleService.findAllByChangeRequestId(changeRequestId);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getId()).isEqualTo(1L);
@@ -180,7 +186,8 @@ class ChangeRequestRoleServiceImplTest {
             changeRequestRoleService.findAllByChangeRequestId(changeRequestId);
         });
 
-        assertThat(exception.getMessage()).isEqualTo(ErrorCodeCommon.CHANGE_REQUEST_ID_NOT_FOUND.getMessage());
+        assertThat(exception.getMessage()).isEqualTo(
+                ErrorCodeCommon.CHANGE_REQUEST_ID_NOT_FOUND.getMessage());
     }
 
     @Test
@@ -188,11 +195,9 @@ class ChangeRequestRoleServiceImplTest {
         // [EN] Input: A valid list of ChangeRequestRoleModel with valid changeFlowNodeId and changeRequestWorkflowId. Mocks are set up to return non-empty maps.
         // [EN] Expected: The method should not throw any exception.
         List<ChangeRequestRoleModel> roles = new ArrayList<>();
-        ChangeRequestRoleModel role1 = ChangeRequestRoleModel.builder()
-                .changeFlowNodeId(10L)
-                .changeRequestWorkflowId(20L)
-                .users(Collections.emptyList())
-                .build();
+        ChangeRequestRoleModel role1 =
+                ChangeRequestRoleModel.builder().changeFlowNodeId(10L).changeRequestWorkflowId(20L)
+                        .users(Collections.emptyList()).build();
         roles.add(role1);
 
         Map<Long, ChangeFlowNodeModel> changeFlowNodeModelMap = new HashMap<>();
@@ -201,7 +206,8 @@ class ChangeRequestRoleServiceImplTest {
         changeRequestWorkflowModelMap.put(20L, new ChangeRequestWorkflowModel());
 
         when(changeFlowNodeService.findByIdIn(anyList())).thenReturn(changeFlowNodeModelMap);
-        when(changeRequestWorkflowService.findByIdIn(anyList())).thenReturn(changeRequestWorkflowModelMap);
+        when(changeRequestWorkflowService.findByIdIn(anyList())).thenReturn(
+                changeRequestWorkflowModelMap);
         doNothing().when(changeRequestRoleUserService).validateList(anyList());
 
         changeRequestRoleService.validateList(roles);
@@ -240,18 +246,17 @@ class ChangeRequestRoleServiceImplTest {
         // [EN] Input: A list of ChangeRequestRoleModel with a null changeFlowNodeId.
         // [EN] Expected: A BusinessException with ErrorCodeCommon.CHANGE_FLOW_NODE_ID_REQUIRED should be thrown.
         List<ChangeRequestRoleModel> roles = new ArrayList<>();
-        ChangeRequestRoleModel role1 = ChangeRequestRoleModel.builder()
-                .changeFlowNodeId(null)
-                .changeRequestWorkflowId(20L)
-                .users(Collections.emptyList())
-                .build();
+        ChangeRequestRoleModel role1 =
+                ChangeRequestRoleModel.builder().changeFlowNodeId(null).changeRequestWorkflowId(20L)
+                        .users(Collections.emptyList()).build();
         roles.add(role1);
 
         BusinessException exception = assertThrows(BusinessException.class, () -> {
             changeRequestRoleService.validateList(roles);
         });
 
-        assertThat(exception.getMessage()).isEqualTo(ErrorCodeCommon.CHANGE_FLOW_NODE_ID_REQUIRED.getMessage());
+        assertThat(exception.getMessage()).isEqualTo(
+                ErrorCodeCommon.CHANGE_FLOW_NODE_ID_REQUIRED.getMessage());
     }
 
     @Test
@@ -259,18 +264,17 @@ class ChangeRequestRoleServiceImplTest {
         // [EN] Input: A list of ChangeRequestRoleModel with a null changeRequestWorkflowId.
         // [EN] Expected: A BusinessException with ErrorCodeCommon.CHANGE_REQUEST_WORKFLOW_ID_REQUIRED should be thrown.
         List<ChangeRequestRoleModel> roles = new ArrayList<>();
-        ChangeRequestRoleModel role1 = ChangeRequestRoleModel.builder()
-                .changeFlowNodeId(10L)
-                .changeRequestWorkflowId(null)
-                .users(Collections.emptyList())
-                .build();
+        ChangeRequestRoleModel role1 =
+                ChangeRequestRoleModel.builder().changeFlowNodeId(10L).changeRequestWorkflowId(null)
+                        .users(Collections.emptyList()).build();
         roles.add(role1);
 
         BusinessException exception = assertThrows(BusinessException.class, () -> {
             changeRequestRoleService.validateList(roles);
         });
 
-        assertThat(exception.getMessage()).isEqualTo(ErrorCodeCommon.CHANGE_REQUEST_WORKFLOW_ID_REQUIRED.getMessage());
+        assertThat(exception.getMessage()).isEqualTo(
+                ErrorCodeCommon.CHANGE_REQUEST_WORKFLOW_ID_REQUIRED.getMessage());
     }
 
     @Test
@@ -278,24 +282,24 @@ class ChangeRequestRoleServiceImplTest {
         // [EN] Input: A list of ChangeRequestRoleModel with a changeFlowNodeId that does not exist in the mock map.
         // [EN] Expected: A BusinessException with ErrorCodeCommon.CHANGE_FLOW_NODE_ID_NOT_FOUND should be thrown.
         List<ChangeRequestRoleModel> roles = new ArrayList<>();
-        ChangeRequestRoleModel role1 = ChangeRequestRoleModel.builder()
-                .changeFlowNodeId(10L)
-                .changeRequestWorkflowId(20L)
-                .users(Collections.emptyList())
-                .build();
+        ChangeRequestRoleModel role1 =
+                ChangeRequestRoleModel.builder().changeFlowNodeId(10L).changeRequestWorkflowId(20L)
+                        .users(Collections.emptyList()).build();
         roles.add(role1);
 
         Map<Long, ChangeFlowNodeModel> changeFlowNodeModelMap = new HashMap<>();
         when(changeFlowNodeService.findByIdIn(anyList())).thenReturn(changeFlowNodeModelMap);
         Map<Long, ChangeRequestWorkflowModel> changeRequestWorkflowModelMap = new HashMap<>();
         changeRequestWorkflowModelMap.put(20L, new ChangeRequestWorkflowModel());
-        when(changeRequestWorkflowService.findByIdIn(anyList())).thenReturn(changeRequestWorkflowModelMap);
+        when(changeRequestWorkflowService.findByIdIn(anyList())).thenReturn(
+                changeRequestWorkflowModelMap);
 
         BusinessException exception = assertThrows(BusinessException.class, () -> {
             changeRequestRoleService.validateList(roles);
         });
 
-        assertThat(exception.getMessage()).isEqualTo(ErrorCodeCommon.CHANGE_FLOW_NODE_ID_NOT_FOUND.getMessage());
+        assertThat(exception.getMessage()).isEqualTo(
+                ErrorCodeCommon.CHANGE_FLOW_NODE_ID_NOT_FOUND.getMessage());
     }
 
     @Test
@@ -303,23 +307,23 @@ class ChangeRequestRoleServiceImplTest {
         // [EN] Input: A list of ChangeRequestRoleModel with a changeRequestWorkflowId that does not exist in the mock map.
         // [EN] Expected: A BusinessException with ErrorCodeCommon.CHANGE_REQUEST_WORKFLOW_ID_NOT_FOUND should be thrown.
         List<ChangeRequestRoleModel> roles = new ArrayList<>();
-        ChangeRequestRoleModel role1 = ChangeRequestRoleModel.builder()
-                .changeFlowNodeId(10L)
-                .changeRequestWorkflowId(20L)
-                .users(Collections.emptyList())
-                .build();
+        ChangeRequestRoleModel role1 =
+                ChangeRequestRoleModel.builder().changeFlowNodeId(10L).changeRequestWorkflowId(20L)
+                        .users(Collections.emptyList()).build();
         roles.add(role1);
 
         Map<Long, ChangeFlowNodeModel> changeFlowNodeModelMap = new HashMap<>();
         changeFlowNodeModelMap.put(10L, new ChangeFlowNodeModel());
         when(changeFlowNodeService.findByIdIn(anyList())).thenReturn(changeFlowNodeModelMap);
         Map<Long, ChangeRequestWorkflowModel> changeRequestWorkflowModelMap = new HashMap<>();
-        when(changeRequestWorkflowService.findByIdIn(anyList())).thenReturn(changeRequestWorkflowModelMap);
+        when(changeRequestWorkflowService.findByIdIn(anyList())).thenReturn(
+                changeRequestWorkflowModelMap);
 
         BusinessException exception = assertThrows(BusinessException.class, () -> {
             changeRequestRoleService.validateList(roles);
         });
 
-        assertThat(exception.getMessage()).isEqualTo(ErrorCodeCommon.CHANGE_REQUEST_WORKFLOW_ID_NOT_FOUND.getMessage());
+        assertThat(exception.getMessage()).isEqualTo(
+                ErrorCodeCommon.CHANGE_REQUEST_WORKFLOW_ID_NOT_FOUND.getMessage());
     }
 }

@@ -11,7 +11,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ChangeRequestModel extends BaseDto<Long> {
+public class ChangeRequestModel extends BaseModel {
 
     private Long id;
     private String title;

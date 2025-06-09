@@ -10,8 +10,11 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class ChangeRequestRoleUserModel extends BaseDto<Long> {
+public class ChangeRequestRoleUserModel extends BaseModel {
     private Long id;
     private Long changeRequestRoleId;
     private String username;
+    private Integer cabGroup;
+    private Integer cabGroupOrder;
+
 }

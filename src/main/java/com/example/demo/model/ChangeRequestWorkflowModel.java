@@ -11,7 +11,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ChangeRequestWorkflowModel extends BaseDto<Long> {
+public class ChangeRequestWorkflowModel extends BaseModel {
     private Long id;
     private Long changeId;
     private String workflowData;

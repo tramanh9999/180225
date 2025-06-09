@@ -1,11 +1,12 @@
 package com.example.demo.model;
 
-import java.io.Serializable;
-import java.time.LocalDateTime;
 import lombok.Data;
 
+import java.io.Serializable;
+import java.time.LocalDateTime;
+
 @Data
-public abstract class BaseDto<ID extends Serializable> implements Serializable {
+public abstract class BaseModel implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
