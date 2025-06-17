@@ -23,5 +23,5 @@ public class ChangeRequestRoleModel extends BaseModel {
 
     private List<ChangeRequestRoleUserModel> cabUserGroups;
 
-    private List<List<ChangeRequestRoleUserModel>> groupedCabUserGroups;
+    private List<ChangeRequestRoleUserListModel> groupedCabUserGroups;
 }

@@ -1,0 +1,92 @@
+[
+  {
+    "id": "edge-start-to-SUBMISSION_PLANNING-init",
+    "source": "start",
+    "target": "SUBMISSION_PLANNING-init",
+    "targetHandle": "0-input",
+    "type": "default",
+    "deletable": false,
+    "markerEnd": { "type": "arrowclosed" }
+  },
+  {
+    "style": { "strokeWidth": 2, "strokeDasharray": "0" },
+    "markerEnd": { "type": "arrowclosed", "width": 15, "height": 15 },
+    "source": "SUBMISSION_PLANNING-init",
+    "sourceHandle": "0-output",
+    "target": "APPROVAL-1750143826680",
+    "targetHandle": "220-input",
+    "id": "reactflow__edge-SUBMISSION_PLANNING-init0-output-APPROVAL-1750143826680220-input"
+  },
+  {
+    "style": { "strokeWidth": 2, "strokeDasharray": "0" },
+    "markerEnd": { "type": "arrowclosed", "width": 15, "height": 15 },
+    "source": "REVIEW_CLOSE-1750143827772",
+    "sourceHandle": "224-output",
+    "target": "end",
+    "targetHandle": null,
+    "id": "reactflow__edge-REVIEW_CLOSE-1750143827772224-output-end"
+  },
+  {
+    "style": { "strokeWidth": 2, "strokeDasharray": "0" },
+    "markerEnd": { "type": "arrowclosed", "width": 15, "height": 15 },
+    "source": "APPROVAL-1750143826680",
+    "sourceHandle": "220-output",
+    "target": "APPROVAL_NODE-1750059604667",
+    "targetHandle": "APPROVAL_NODE-1750059604667-input",
+    "id": "reactflow__edge-APPROVAL-1750143826680220-output-APPROVAL_NODE-1750059604667APPROVAL_NODE-1750059604667-input"
+  },
+  {
+    "style": { "strokeWidth": 2, "strokeDasharray": "0" },
+    "markerEnd": { "type": "arrowclosed", "width": 15, "height": 15 },
+    "source": "APPROVAL_NODE-1750059646263",
+    "sourceHandle": "APPROVAL_NODE-1750059646263-Accept-output",
+    "target": "REVIEW_CLOSE-1750143827772",
+    "targetHandle": "224-input",
+    "id": "reactflow__edge-APPROVAL_NODE-1750059646263APPROVAL_NODE-1750059646263-Accept-output-REVIEW_CLOSE-1750143827772224-input"
+  },
+  {
+    "style": { "strokeWidth": 2, "strokeDasharray": "0" },
+    "markerEnd": { "type": "arrowclosed", "width": 15, "height": 15 },
+    "source": "APPROVAL_NODE-1750059646263",
+    "sourceHandle": "APPROVAL_NODE-1750059646263-Reject-output",
+    "target": "REVIEW_CLOSE-1750143827772",
+    "targetHandle": "224-input",
+    "id": "reactflow__edge-APPROVAL_NODE-1750059646263APPROVAL_NODE-1750059646263-Reject-output-REVIEW_CLOSE-1750143827772224-input"
+  },
+  {
+    "style": { "strokeWidth": 2, "strokeDasharray": "0" },
+    "markerEnd": { "type": "arrowclosed", "width": 15, "height": 15 },
+    "source": "APPROVAL_NODE-1750059604667",
+    "sourceHandle": "APPROVAL_NODE-1750059604667-Accept-output",
+    "target": "IMPLEMENTATION-1750143828634",
+    "targetHandle": "227-input",
+    "id": "reactflow__edge-APPROVAL_NODE-1750059604667APPROVAL_NODE-1750059604667-Accept-output-IMPLEMENTATION-1750143828634227-input"
+  },
+  {
+    "style": { "strokeWidth": 2, "strokeDasharray": "0" },
+    "markerEnd": { "type": "arrowclosed", "width": 15, "height": 15 },
+    "source": "APPROVAL_NODE-1750059604667",
+    "sourceHandle": "APPROVAL_NODE-1750059604667-Reject-output",
+    "target": "CAB_NODE-1750059620663",
+    "targetHandle": "CAB_NODE-1750059620663-input",
+    "id": "reactflow__edge-APPROVAL_NODE-1750059604667APPROVAL_NODE-1750059604667-Reject-output-CAB_NODE-1750059620663CAB_NODE-1750059620663-input"
+  },
+  {
+    "style": { "strokeWidth": 2, "strokeDasharray": "0" },
+    "markerEnd": { "type": "arrowclosed", "width": 15, "height": 15 },
+    "source": "CAB_NODE-1750059620663",
+    "sourceHandle": "CAB_NODE-1750059620663-Accept-output",
+    "target": "APPROVAL_NODE-1750059646263",
+    "targetHandle": "APPROVAL_NODE-1750059646263-input",
+    "id": "reactflow__edge-CAB_NODE-1750059620663CAB_NODE-1750059620663-Accept-output-APPROVAL_NODE-1750059646263APPROVAL_NODE-1750059646263-input"
+  },
+  {
+    "style": { "strokeWidth": 2, "strokeDasharray": "0" },
+    "markerEnd": { "type": "arrowclosed", "width": 15, "height": 15 },
+    "source": "CAB_NODE-1750059620663",
+    "sourceHandle": "CAB_NODE-1750059620663-Reject-output",
+    "target": "REVIEW_CLOSE-1750143827772",
+    "targetHandle": "224-input",
+    "id": "reactflow__edge-CAB_NODE-1750059620663CAB_NODE-1750059620663-Reject-output-REVIEW_CLOSE-1750143827772224-input"
+  }
+]

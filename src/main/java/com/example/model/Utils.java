@@ -2,6 +2,7 @@ package com.example.model;
 
 
 import com.example.demo.model.ChangeRequestRoleModel;
+import com.example.demo.model.ChangeRequestRoleUserListModel;
 import com.example.demo.model.ChangeRequestRoleUserModel;
 
 import java.util.*;
@@ -70,7 +71,9 @@ public class Utils {
             }
 
             // Bước 3: Gán kết quả vào một biến mới
-            item.setGroupedCabUserGroups(sorted2DList);
+            item.setGroupedCabUserGroups(sorted2DList.stream()
+                    .map(oneGroup -> ChangeRequestRoleUserListModel.builder().users(oneGroup)
+                            .build()).collect(Collectors.toList()));
         }
     }
 

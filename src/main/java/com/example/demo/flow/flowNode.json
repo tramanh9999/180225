@@ -1,0 +1,285 @@
+[
+  {
+    "id": "start",
+    "type": "input",
+    "position": { "x": 19.344075607742752, "y": 313.8665256452168 },
+    "data": { "label": "Start" },
+    "deletable": false,
+    "width": 150,
+    "height": 41,
+    "selected": true,
+    "positionAbsolute": { "x": 19.344075607742752, "y": 313.8665256452168 },
+    "dragging": false
+  },
+  {
+    "id": "SUBMISSION_PLANNING-init",
+    "deletable": false,
+    "type": "SUBMISSION_PLANNING",
+    "position": { "x": 399.6258560378242, "y": 149.85263213952135 },
+    "data": {
+      "label": "Stage Submission & Planning",
+      "stageType": "SUBMISSION_PLANNING",
+      "statusList": [
+        {
+          "id": 256,
+          "name": "stata plann them",
+          "description": null,
+          "action": null,
+          "stage": "SUBMISSION_PLANNING",
+          "createdDate": "2025-06-13T04:20:27.000+00:00",
+          "createdBy": "thenx.os",
+          "modifiedBy": "thenx.os",
+          "modifiedDate": "2025-06-13T04:20:27.000+00:00"
+        },
+        {
+          "id": 54,
+          "name": "dgfgfgf312",
+          "description": null,
+          "action": null,
+          "stage": "SUBMISSION_PLANNING",
+          "createdDate": "2025-05-28T08:35:40.000+00:00",
+          "createdBy": "thenx.os",
+          "modifiedBy": "thenx.os",
+          "modifiedDate": "2025-05-28T08:52:01.000+00:00"
+        },
+        {
+          "id": 1,
+          "name": "Add new22",
+          "description": "hnehehe",
+          "action": "Accccs",
+          "stage": "SUBMISSION_PLANNING",
+          "createdDate": "2025-05-16T03:58:57.000+00:00",
+          "createdBy": "nambd_mbb_po",
+          "modifiedBy": "nambd_mbb_po",
+          "modifiedDate": "2025-05-16T04:05:24.000+00:00"
+        },
+        {
+          "id": 0,
+          "name": "Draft",
+          "stage": "SUBMISSION_PLANNING",
+          "createdDate": "",
+          "modifiedDate": ""
+        }
+      ]
+    },
+    "width": 257,
+    "height": 309,
+    "selected": false,
+    "positionAbsolute": { "x": 399.6258560378242, "y": 149.85263213952135 },
+    "dragging": false
+  },
+  {
+    "id": "end",
+    "type": "output",
+    "position": { "x": 1182.0187560554173, "y": 602.2308483583963 },
+    "data": { "label": "End" },
+    "deletable": false,
+    "width": 150,
+    "height": 41,
+    "selected": false,
+    "positionAbsolute": { "x": 1182.0187560554173, "y": 602.2308483583963 },
+    "dragging": false
+  },
+  {
+    "id": "APPROVAL_NODE-1750059604667",
+    "type": "APPROVAL_NODE",
+    "position": { "x": 408.6652234727207, "y": 63.411434946691315 },
+    "data": {
+      "name": "CF_DONTDELETE_T4D_APP1_ CHANGETO_LEVEL2",
+      "type": "APPROVAL",
+      "label": "CF_DONTDELETE_T4D_APP1_ CHANGETO_LEVEL2",
+      "id": null,
+      "nodeId": "APPROVAL_NODE-1750059604667",
+      "groups": [
+        { "id": "261", "name": "Test thêm mới group 1704" },
+        {
+          "id": "207",
+          "name": "do thi thuy quynh 2. Cụm chọn \"Ngày Start - Ngày End\"  Khi Click ra ngoài thì đóng  Hiển thị bên Trái là Tháng hiện tại - 1M (Được phép chọn các tháng quá khứ) Hiển thị bên Phải là Tháng hiện tại  Gía trị chọn đầu tiên là Ngày Start   Gía trị chọn thứ 2 l"
+        },
+        { "id": "320", "name": "Demo group" },
+        { "id": "551", "name": "CHANGE_ROLE_GROUP_NOT_DELETE_3" },
+        { "id": "602", "name": "NOT_CHANGE_ROLE" }
+      ],
+      "nodeLevel": 2
+    },
+    "width": 396,
+    "height": 200,
+    "selected": false,
+    "positionAbsolute": { "x": 408.6652234727207, "y": 63.411434946691315 },
+    "dragging": false
+  },
+  {
+    "id": "CAB_NODE-1750059620663",
+    "type": "CAB_NODE",
+    "position": { "x": 343.8481891929156, "y": 379.2882907293638 },
+    "data": {
+      "name": "CF_DONTDELETE_T4D_CAB_2_TOLEVEL3",
+      "type": "CAB",
+      "label": "CF_DONTDELETE_T4D_CAB_2_TOLEVEL3",
+      "id": null,
+      "nodeId": "CAB_NODE-1750059620663",
+      "groups": [{ "id": "505", "name": "CAB_GROUP_NOT_DELETE_1" }],
+      "nodeLevel": 3
+    },
+    "width": 326,
+    "height": 200,
+    "selected": false,
+    "positionAbsolute": { "x": 343.8481891929156, "y": 379.2882907293638 },
+    "dragging": false
+  },
+  {
+    "id": "APPROVAL_NODE-1750059646263",
+    "type": "APPROVAL_NODE",
+    "position": { "x": 755.7114957337853, "y": 249.5564235706671 },
+    "data": {
+      "name": "CF_DONTDELETE_T4D_APP3_TO_LEVEL1",
+      "type": "APPROVAL",
+      "label": "CF_DONTDELETE_T4D_APP3_TO_LEVEL1",
+      "id": null,
+      "nodeId": "APPROVAL_NODE-1750059646263",
+      "groups": [{ "id": "261", "name": "Test thêm mới group 1704" }],
+      "nodeLevel": 1
+    },
+    "width": 325,
+    "height": 200,
+    "selected": false,
+    "positionAbsolute": { "x": 755.7114957337853, "y": 249.5564235706671 },
+    "dragging": false
+  },
+  {
+    "id": "APPROVAL-1750143826680",
+    "type": "APPROVAL",
+    "position": { "x": 162.2405163908105, "y": -48.83040955212465 },
+    "data": {
+      "label": "Stage Approval",
+      "stageType": "APPROVAL",
+      "statusList": [
+        {
+          "id": 220,
+          "name": "đasa",
+          "description": null,
+          "action": null,
+          "stage": "APPROVAL",
+          "createdDate": "2025-05-29T11:02:30.000+00:00",
+          "createdBy": "thenx.os",
+          "modifiedBy": "thenx.os",
+          "modifiedDate": "2025-05-31T14:39:31.000+00:00"
+        },
+        {
+          "id": 66,
+          "name": "abcbasdasdasdasd",
+          "description": null,
+          "action": null,
+          "stage": "APPROVAL",
+          "createdDate": "2025-05-29T08:14:44.000+00:00",
+          "createdBy": "thenx.os",
+          "modifiedBy": "thangnv9",
+          "modifiedDate": "2025-05-29T08:57:04.000+00:00"
+        },
+        {
+          "id": 68,
+          "name": "rfdfhgf",
+          "description": null,
+          "action": null,
+          "stage": "APPROVAL",
+          "createdDate": "2025-05-29T08:17:36.000+00:00",
+          "createdBy": "quynhdtt.os",
+          "modifiedBy": "quynhdtt.os",
+          "modifiedDate": "2025-05-29T08:17:51.000+00:00"
+        },
+        {
+          "id": 51,
+          "name": "xácâcsc",
+          "description": "cacsacascas",
+          "action": "ccsacasc",
+          "stage": "APPROVAL",
+          "createdDate": "2025-05-27T07:57:16.000+00:00",
+          "createdBy": "thenx.os",
+          "modifiedBy": "thenx.os",
+          "modifiedDate": "2025-05-28T07:21:11.000+00:00"
+        }
+      ]
+    },
+    "width": 200,
+    "height": 309,
+    "selected": false,
+    "positionAbsolute": { "x": 162.2405163908105, "y": -48.83040955212465 },
+    "dragging": false
+  },
+  {
+    "id": "REVIEW_CLOSE-1750143827772",
+    "type": "REVIEW_CLOSE",
+    "position": { "x": 942.2010268613228, "y": 497.9392001205947 },
+    "data": {
+      "label": "Stage Review & Close",
+      "stageType": "REVIEW_CLOSE",
+      "statusList": [
+        {
+          "id": 224,
+          "name": "hhhlkk",
+          "description": null,
+          "action": "{\"status\":200,\"path\":null,\"clientMessageId\":\"82f67b8f-7287-4a37-a2a2-fe33d42eb485\",\"errorCode\":null,\"errorDescription\":null,\"data\":{\"content[],\"pageable\":{\"pageNumber\":0,\"pageSize\":10,\"sort\":{\"empty\":true,\"sorted\":false,\"unsorted\":true},s2333@#$$%*Y%^PU($",
+          "stage": "REVIEW_CLOSE",
+          "createdDate": "2025-05-31T16:04:25.000+00:00",
+          "createdBy": "thenx.os",
+          "modifiedBy": "thenx.os",
+          "modifiedDate": "2025-06-01T08:33:28.000+00:00"
+        }
+      ]
+    },
+    "width": 200,
+    "height": 140,
+    "selected": false,
+    "positionAbsolute": { "x": 942.2010268613228, "y": 497.9392001205947 },
+    "dragging": false
+  },
+  {
+    "id": "IMPLEMENTATION-1750143828634",
+    "type": "IMPLEMENTATION",
+    "position": { "x": 890.22217595764, "y": -73.52708547213382 },
+    "data": {
+      "label": "Stage Implementation",
+      "stageType": "IMPLEMENTATION",
+      "statusList": [
+        {
+          "id": 227,
+          "name": "ửtertert",
+          "description": null,
+          "action": null,
+          "stage": "IMPLEMENTATION",
+          "createdDate": "2025-06-03T03:57:09.000+00:00",
+          "createdBy": "quynhdtt.os",
+          "modifiedBy": "quynhdtt.os",
+          "modifiedDate": "2025-06-03T03:57:24.000+00:00"
+        },
+        {
+          "id": 221,
+          "name": "ẻyut6tototuouyouur67rt6uttr5y",
+          "description": "{\"status\":200,\"path\":null,\"clientMessageId\":\"82f67b8f-7287-4a37-a2a2-sdsvfbvcccccccccccccccccccccccccccccccccccccchhhhhyuiy",
+          "action": null,
+          "stage": "IMPLEMENTATION",
+          "createdDate": "2025-05-31T15:03:42.000+00:00",
+          "createdBy": "thenx.os",
+          "modifiedBy": "thenx.os",
+          "modifiedDate": "2025-06-01T09:39:54.000+00:00"
+        },
+        {
+          "id": 222,
+          "name": "test 01.06",
+          "description": "hvhcngmh       vggjjgnm           xzghfnvnfjgdjgdnxnjfsnjfxnfgnnhfhf •\tTừ ngoài cổng sắt nhìn vào, ta sẽ thấy một khoảng sân bê tông thật rộng. Chính giữa sân là cột cờ, sân trường là nơi học sinh toàn trường tập trung chào cờ vào sáng thứ hai.\n•\tSân trường rộng rãi, mát mẻ bởi có những hàng cây tỏa bóng mát. Học sinh thường chơi bi, ngồi dưới bóng cây đọc sách.\n•\tBa tòa nhà hai tầng xinh xắn tạo thành hình chữ u, tòa nhà nào cũng được quét một lớp sơn vàng óng.\n•\tKhu nhà hiệu bộ khang sang đặt cạnh hồ sen thơm ngát.\n•\tCác phòng học thoáng mát, có quạt trần đèn điện, có giá sách, tủ trưng bày sản phẩm của học sinh. Từng lớp được trang trí những bức họa đầy màu sắc.\nUUYUY&&*&y*&*(yu))ơl<:kly£\"%=\"https://a.example/register-source https://b.example/register-source\"></script>\n\nHHKHJMBMBNV   \n\nKSKFL;SFML.DMK;LV,MC./V,;L9O893U8IRJU8OU38I\n\nKLIU3OJELKJRIOURI34U93I43O4I3948394U3947Ii278932u9o43uijwiry384u2y392u3928u4o3j43u493u43ou2098u324u2894u24iu2342\n\n\n4u8o347u39i4u3i943u493oi4\n3'43\n4p34i304i",
+          "action": "rtfdudjstyjg354546567eq12414%&Y*&&Y(*(I)Ơ?>?:L:>?•\tTừ ngoài cổng sắt nhìn vào, ta sẽ thấy một khoảng sân bê tông thật rộng. Chính giữa sân là cột cờ, sân trường là nơi học sinh toàn trường tập trung chào cờ vào sáng thứ hai. •\tSân trường rộng rãi, mát mẻ",
+          "stage": "IMPLEMENTATION",
+          "createdDate": "2025-05-31T15:43:25.000+00:00",
+          "createdBy": "thenx.os",
+          "modifiedBy": "thenx.os",
+          "modifiedDate": "2025-06-01T09:37:25.000+00:00"
+        }
+      ]
+    },
+    "width": 268,
+    "height": 253,
+    "selected": false,
+    "positionAbsolute": { "x": 890.22217595764, "y": -73.52708547213382 },
+    "dragging": false
+  }
+]

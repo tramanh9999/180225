@@ -1,5 +1,6 @@
 package com.example.model;
 import com.example.demo.model.ChangeRequestRoleModel;
+import com.example.demo.model.ChangeRequestRoleUserListModel;
 import com.example.demo.model.ChangeRequestRoleUserModel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,17 +41,17 @@ public class UtilsTest {
         // Act
         utils.groupAndSortCabUserGroups(items);
         // Assert
-        List<List<ChangeRequestRoleUserModel>> grouped1 = item1.getGroupedCabUserGroups();
+        List<ChangeRequestRoleUserListModel> grouped1 = item1.getGroupedCabUserGroups();
 
         assertEquals(2, grouped1.size());
-        assertEquals(1, grouped1.get(0).get(0).getCabGroup());
-        assertEquals(2, grouped1.get(1).get(0).getCabGroup());
-        assertEquals(1, grouped1.get(1).get(0).getCabGroupOrder());
-        assertEquals(2, grouped1.get(1).get(1).getCabGroupOrder());
-        List<List<ChangeRequestRoleUserModel>> grouped2 = item2.getGroupedCabUserGroups();
+        assertEquals(1, grouped1.get(0).getUsers().get(0).getCabGroup());
+        assertEquals(2, grouped1.get(1).getUsers().get(0).getCabGroup());
+        assertEquals(1, grouped1.get(1).getUsers().get(0).getCabGroupOrder());
+        assertEquals(2, grouped1.get(1).getUsers().get(1).getCabGroupOrder());
+        List<ChangeRequestRoleUserListModel> grouped2 = item2.getGroupedCabUserGroups();
         assertEquals(1, grouped2.size());
-        assertEquals(1, grouped2.get(0).get(0).getCabGroupOrder());
-        assertEquals(2, grouped2.get(0).get(1).getCabGroupOrder());
+        assertEquals(1, grouped2.get(0).getUsers().get(0).getCabGroupOrder());
+        assertEquals(2, grouped2.get(0).getUsers().get(1).getCabGroupOrder());
     }
     /**
      * [EN] Input: A list of ChangeRequestRoleModel with some items having null cabUserGroups.
@@ -88,11 +89,11 @@ public class UtilsTest {
         // Act
         utils.groupAndSortCabUserGroups(items);
         // Assert
-        List<List<ChangeRequestRoleUserModel>> grouped1 = item1.getGroupedCabUserGroups();
-        assertEquals(2, grouped1.get(0).size());
+        List<ChangeRequestRoleUserListModel> grouped1 = item1.getGroupedCabUserGroups();
         assertEquals(1, grouped1.size());
-        assertEquals(1, grouped1.get(0).get(0).getCabGroup());
-        assertNull(grouped1.get(0).get(1).getCabGroup());
+        assertEquals(2, grouped1.get(0).getUsers().size());
+        assertEquals(1, grouped1.get(0).getUsers().get(0).getCabGroup());
+        assertNull(grouped1.get(0).getUsers().get(1).getCabGroup());
     }
     /**
      * [EN] Input: A list of ChangeRequestRoleModel with empty cabUserGroups.
@@ -124,11 +125,11 @@ public class UtilsTest {
         // Act
         utils.groupAndSortCabUserGroups(items);
         // Assert
-        List<List<ChangeRequestRoleUserModel>> grouped1 = item1.getGroupedCabUserGroups();
+        List<ChangeRequestRoleUserListModel> grouped1 = item1.getGroupedCabUserGroups();
         assertEquals(1, grouped1.size());
-        assertEquals(1, grouped1.get(0).size());
-        assertEquals(1, grouped1.get(0).get(0).getCabGroup());
-        assertEquals(1, grouped1.get(0).get(0).getCabGroupOrder());
+        assertEquals(1, grouped1.get(0).getUsers().size());
+        assertEquals(1, grouped1.get(0).getUsers().get(0).getCabGroup());
+        assertEquals(1, grouped1.get(0).getUsers().get(0).getCabGroupOrder());
     }
 
     /**
