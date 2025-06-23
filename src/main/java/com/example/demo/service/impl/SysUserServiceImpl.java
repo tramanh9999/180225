@@ -1,6 +1,6 @@
 package com.example.demo.service.impl; // Đặt implementation trong package 'impl'
 
-import com.example.demo.entity.entity.SysUserEntity;
+import com.example.demo.entity.SysUserEntity;
 import com.example.demo.repository.SysUserRepository;
 import com.example.demo.service.SysUserService;
 import lombok.RequiredArgsConstructor;

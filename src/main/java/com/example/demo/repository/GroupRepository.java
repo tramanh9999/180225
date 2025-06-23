@@ -1,6 +1,6 @@
 package com.example.demo.repository;
 
-import com.example.demo.entity.entity.SysGroupEntity;
+import com.example.demo.entity.SysGroupEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

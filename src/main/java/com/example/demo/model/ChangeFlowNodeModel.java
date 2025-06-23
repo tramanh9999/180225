@@ -1,5 +1,6 @@
 package com.example.demo.model;
 
+import com.example.demo.enums.ChangeFlowNodeType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,6 +16,6 @@ import lombok.NoArgsConstructor;
 public class ChangeFlowNodeModel {
     private Long id;
     private Long changeFlowId;
-    private String type;
+    private ChangeFlowNodeType type;
     private Integer level;
 }

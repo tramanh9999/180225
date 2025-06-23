@@ -1,7 +1,7 @@
 package com.example.demo.mapper;
 
 import com.example.demo.entity.CustomFieldValueEntity;
-import com.example.demo.model.CustomFieldValueDto;
+import com.example.demo.model.CustomFieldValueModel;
 import org.mapstruct.Mapper;
 import org.springframework.stereotype.Component;
 
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @Component
 public interface CustomFieldValueMapper {
 
-    CustomFieldValueDto toDto(CustomFieldValueEntity entity);
+    CustomFieldValueModel toDto(CustomFieldValueEntity entity);
 
-    CustomFieldValueEntity toEntity(CustomFieldValueDto dto);
+    CustomFieldValueEntity toEntity(CustomFieldValueModel dto);
 }

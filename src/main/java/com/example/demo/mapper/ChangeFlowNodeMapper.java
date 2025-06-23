@@ -1,6 +1,6 @@
 package com.example.demo.mapper;
 
-import com.example.demo.entity.entity.ChangeFlowNodeEntity;
+import com.example.demo.entity.ChangeFlowNodeEntity;
 import com.example.demo.model.ChangeFlowNodeModel;
 import org.mapstruct.Mapper;
 import org.springframework.stereotype.Component;

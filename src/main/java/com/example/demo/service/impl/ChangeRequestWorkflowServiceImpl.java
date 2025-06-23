@@ -1,6 +1,6 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.entity.entity.ChangeRequestWorkflowEntity;
+import com.example.demo.entity.ChangeRequestWorkflowEntity;
 import com.example.demo.mapper.ChangeRequestWorkflowMapper;
 import com.example.demo.model.ChangeRequestWorkflowModel;
 import com.example.demo.repository.ChangeRequestWorkflowRepository;

@@ -1,6 +1,6 @@
 package com.example.demo.mapper;
 
-import com.example.demo.entity.entity.ChangeRequestRoleEntity;
+import com.example.demo.entity.ChangeRequestRoleEntity;
 import com.example.demo.model.ChangeRequestRoleModel;
 import com.example.demo.model.ChangeRequestRoleUserModel;
 import org.mapstruct.Mapper;

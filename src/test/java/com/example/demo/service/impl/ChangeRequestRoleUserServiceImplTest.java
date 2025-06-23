@@ -1,13 +1,13 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.entity.entity.ChangeRequestRoleUserEntity;
-import com.example.demo.entity.entity.SysUserEntity;
+import com.example.demo.entity.ChangeRequestRoleUserEntity;
+import com.example.demo.entity.SysUserEntity;
 import com.example.demo.mapper.ChangeRequestRoleUserMapper;
+import com.example.demo.model.BusinessException;
 import com.example.demo.model.ChangeRequestRoleUserModel;
+import com.example.demo.model.ErrorCodeCommon;
 import com.example.demo.repository.ChangeRequestRoleUserRepository;
 import com.example.demo.service.SysUserService;
-import com.example.demo.service.dto.BusinessException;
-import com.example.demo.service.dto.ErrorCodeCommon;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

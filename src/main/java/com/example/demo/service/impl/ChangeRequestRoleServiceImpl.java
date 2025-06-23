@@ -1,26 +1,18 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.entity.entity.ChangeRequestRoleEntity;
+import com.example.demo.entity.ChangeRequestRoleEntity;
 import com.example.demo.mapper.ChangeRequestRoleMapper;
-import com.example.demo.model.ChangeFlowNodeModel;
-import com.example.demo.model.ChangeRequestRoleModel;
-import com.example.demo.model.ChangeRequestRoleUserModel;
-import com.example.demo.model.ChangeRequestWorkflowModel;
+import com.example.demo.model.*;
 import com.example.demo.repository.ChangeRequestRoleRepository;
 import com.example.demo.service.ChangeFlowNodeService;
 import com.example.demo.service.ChangeRequestRoleService;
 import com.example.demo.service.ChangeRequestRoleUserService;
 import com.example.demo.service.ChangeRequestWorkflowService;
-import com.example.demo.service.dto.BusinessException;
-import com.example.demo.service.dto.ErrorCodeCommon;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -133,4 +125,52 @@ public class ChangeRequestRoleServiceImpl implements ChangeRequestRoleService {
         changeRequestRoleUserService.validateList(
                 roles.stream().flatMap(role -> role.getUsers().stream()).toList());
     }
+
+
+    /**
+     * Lấy ra tất cả các ChangeRequestRoleModel mà một username được chỉ định thuộc về,
+     * trong một changeRequestId cụ thể.
+     *
+     * @param allChangeRequestRoles Danh sách tất cả các ChangeRequestRoleModel có sẵn.
+     * @param changeRequestId       ID của Change Request cần lọc.
+     * @param username              Tên người dùng cần tìm role.
+     * @return Danh sách các ChangeRequestRoleModel mà username đó có role trong Change Request được chỉ định.
+     */
+    public List<ChangeRequestRoleModel> getRolesForUserInChangeRequest(
+            List<ChangeRequestRoleModel> allChangeRequestRoles, Long changeRequestId,
+            String username) {
+
+        if (allChangeRequestRoles == null || username == null) {
+            return new ArrayList<>();
+        }
+
+        return allChangeRequestRoles.stream()
+                // Lọc theo changeRequestId trước để giảm số lượng đối tượng cần xử lý
+                .filter(role -> Objects.equals(role.getChangeRequestId(), changeRequestId))
+                // Kiểm tra xem username có trong danh sách 'users' hoặc 'cabUserGroups'
+                // hoặc trong 'groupedCabUserGroups' của mỗi role hay không
+                .filter(role -> {
+                    // Kiểm tra danh sách 'users' (Approval roles)
+                    boolean foundInUsers = role.getUsers() != null && role.getUsers().stream()
+                            .anyMatch(user -> username.equals(user.getUsername()));
+
+                    // Kiểm tra danh sách 'cabUserGroups' (CAB roles, nếu có)
+                    boolean foundInCabUsers = role.getCabUserGroups() != null &&
+                            role.getCabUserGroups().stream()
+                                    .anyMatch(user -> username.equals(user.getUsername()));
+
+                    // Kiểm tra danh sách 'groupedCabUserGroups' (CAB roles được nhóm)
+                    // Đây là danh sách các list con của ChangeRequestRoleUserModel
+                    boolean foundInGroupedCabUsers = role.getGroupedCabUserGroups() != null &&
+                            role.getGroupedCabUserGroups().stream().flatMap(
+                                            group -> group.getUsers() != null ? group.getUsers().stream() :
+                                                    null) // Làm phẳng các danh sách con
+                                    .filter(Objects::nonNull) // Lọc bỏ các phần tử null nếu có
+                                    .anyMatch(user -> username.equals(user.getUsername()));
+
+                    return foundInUsers || foundInCabUsers || foundInGroupedCabUsers;
+                }).collect(Collectors.toList());
+    }
+
+
 }

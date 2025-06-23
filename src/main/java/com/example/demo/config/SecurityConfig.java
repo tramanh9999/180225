@@ -17,15 +17,18 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable()) // Disable CSRF for API calls (consider enabling for production with
-                                              // proper token handling)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Enable CORS with custom
-                                                                                   // configuration
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/change-template/**", "/error").permitAll() // Permit all requests to
-                                                                                      // /change-template and /error
-                        .anyRequest().authenticated() // All other requests require authentication
+        http.csrf(
+                        csrf -> csrf.disable()) // Disable CSRF for API calls (consider enabling for production with
+                // proper token handling)
+                .cors(cors -> cors.configurationSource(
+                        corsConfigurationSource())) // Enable CORS with custom
+                // configuration
+                .authorizeHttpRequests(authorize -> authorize.requestMatchers("/**").permitAll()//
+                                // Permit
+                                // all requests to
+                                // /change-template and /error
+                                .anyRequest().authenticated()
+                        // All other requests require authentication
                 );
         return http.build();
     }
@@ -33,12 +36,15 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173")); // Allow frontend origin
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")); // Allow
-                                                                                                            // common
-                                                                                                            // methods
+        configuration.setAllowedOrigins(
+                Arrays.asList("http://localhost:5173")); // Allow frontend origin
+        configuration.setAllowedMethods(
+                Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")); // Allow
+        // common
+        // methods
         configuration.setAllowedHeaders(Arrays.asList("*")); // Allow all headers
-        configuration.setAllowCredentials(true); // Allow credentials (e.g., cookies, authorization headers)
+        configuration.setAllowCredentials(
+                true); // Allow credentials (e.g., cookies, authorization headers)
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration); // Apply CORS to all paths
         return source;

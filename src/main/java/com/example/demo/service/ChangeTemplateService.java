@@ -1,6 +1,6 @@
 package com.example.demo.service;
 
-import com.example.demo.model.ChangeTemplateFieldItemDto;
+import com.example.demo.model.ChangeTemplateFieldItemModel;
 import com.example.demo.model.ChangeTemplateModel;
 import org.springframework.data.domain.Page;
 
@@ -58,8 +58,8 @@ public interface ChangeTemplateService {
      * @param size             The number of items per page.
      * @return A page of field item data.
      */
-    Page<ChangeTemplateFieldItemDto> getPaginatedFieldItems(Long changeTemplateId, int page,
-                                                            int size);
+    Page<ChangeTemplateFieldItemModel> getPaginatedFieldItems(Long changeTemplateId, int page,
+                                                              int size);
 
 
     /**

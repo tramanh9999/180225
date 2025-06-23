@@ -1,6 +1,6 @@
 package com.example.demo.mapper;
 
-import com.example.demo.entity.entity.ChangeRequestWorkflowEntity;
+import com.example.demo.entity.ChangeRequestWorkflowEntity;
 import com.example.demo.model.ChangeRequestWorkflowModel;
 import org.mapstruct.Mapper;
 import org.springframework.stereotype.Component;

@@ -1,6 +1,6 @@
 package com.example.demo.controller;
 
-import com.example.demo.model.ChangeTemplateFieldItemDto;
+import com.example.demo.model.ChangeTemplateFieldItemModel;
 import com.example.demo.model.ChangeTemplateModel;
 import com.example.demo.model.PagingRequestModel;
 import com.example.demo.service.ChangeRequestRoleService;
@@ -98,12 +98,12 @@ public class ChangeTemplateController {
      * @return the paginated field items
      */
     @GetMapping("/{changeTemplateId}/field-items")
-    public ResponseEntity<Page<ChangeTemplateFieldItemDto>> getPaginatedFieldItems(
+    public ResponseEntity<Page<ChangeTemplateFieldItemModel>> getPaginatedFieldItems(
             @PathVariable Long changeTemplateId,
             @RequestBody(required = false) PagingRequestModel pagingRequest) {
         int page = pagingRequest != null ? pagingRequest.getPage() : 0;
         int size = pagingRequest != null ? pagingRequest.getSize() : 10;
-        Page<ChangeTemplateFieldItemDto> fieldItemsPage =
+        Page<ChangeTemplateFieldItemModel> fieldItemsPage =
                 changeTemplateService.getPaginatedFieldItems(changeTemplateId, page, size);
         return ResponseEntity.ok(fieldItemsPage);
     }

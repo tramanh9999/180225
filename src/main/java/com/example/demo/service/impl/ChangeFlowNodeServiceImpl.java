@@ -1,6 +1,6 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.entity.entity.ChangeFlowNodeEntity;
+import com.example.demo.entity.ChangeFlowNodeEntity;
 import com.example.demo.mapper.ChangeFlowNodeMapper;
 import com.example.demo.model.ChangeFlowNodeModel;
 import com.example.demo.model.PagingRequestModel;

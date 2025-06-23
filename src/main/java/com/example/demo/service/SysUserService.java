@@ -1,6 +1,6 @@
 package com.example.demo.service;
 
-import com.example.demo.entity.entity.SysUserEntity;
+import com.example.demo.entity.SysUserEntity;
 
 import java.util.Optional;
 

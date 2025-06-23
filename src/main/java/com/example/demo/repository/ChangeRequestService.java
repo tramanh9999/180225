@@ -1,7 +1,7 @@
 package com.example.demo.repository;
 
+import com.example.demo.model.BusinessException;
 import com.example.demo.model.ChangeRequestModel;
-import com.example.demo.service.dto.BusinessException;
 
 /**
  * Service interface for ChangeRequestModel.

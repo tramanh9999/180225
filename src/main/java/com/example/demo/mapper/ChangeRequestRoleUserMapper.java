@@ -1,6 +1,6 @@
 package com.example.demo.mapper;
 
-import com.example.demo.entity.entity.ChangeRequestRoleUserEntity;
+import com.example.demo.entity.ChangeRequestRoleUserEntity;
 import com.example.demo.model.ChangeRequestRoleUserModel;
 import org.mapstruct.Mapper;
 import org.springframework.stereotype.Component;

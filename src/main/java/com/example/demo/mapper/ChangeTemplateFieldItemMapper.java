@@ -1,7 +1,7 @@
 package com.example.demo.mapper;
 
 import com.example.demo.entity.ChangeTemplateFieldItemEntity;
-import com.example.demo.model.ChangeTemplateFieldItemDto;
+import com.example.demo.model.ChangeTemplateFieldItemModel;
 import org.mapstruct.Mapper;
 import org.springframework.stereotype.Component;
 
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 public interface ChangeTemplateFieldItemMapper {
 
 
-    ChangeTemplateFieldItemDto toDto(ChangeTemplateFieldItemEntity entity);
+    ChangeTemplateFieldItemModel toDto(ChangeTemplateFieldItemEntity entity);
 
-    ChangeTemplateFieldItemEntity toEntity(ChangeTemplateFieldItemDto dto);
+    ChangeTemplateFieldItemEntity toEntity(ChangeTemplateFieldItemModel dto);
 }

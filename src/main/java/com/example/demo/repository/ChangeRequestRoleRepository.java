@@ -1,6 +1,6 @@
 package com.example.demo.repository;
 
-import com.example.demo.entity.entity.ChangeRequestRoleEntity;
+import com.example.demo.entity.ChangeRequestRoleEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

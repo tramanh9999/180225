@@ -1,10 +1,10 @@
 package com.example.demo.mapper;
 
-import com.example.demo.entity.entity.SysGroupEntity;
+import com.example.demo.entity.SysGroupEntity;
 import com.example.demo.enums.GroupType;
+import com.example.demo.model.BusinessException;
+import com.example.demo.model.ErrorCodeCommon;
 import com.example.demo.model.SysGroupModel;
-import com.example.demo.service.dto.BusinessException;
-import com.example.demo.service.dto.ErrorCodeCommon;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 import org.springframework.stereotype.Component;

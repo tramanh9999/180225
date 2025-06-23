@@ -1,13 +1,13 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.entity.entity.ChangeRequestRoleUserEntity;
+import com.example.demo.entity.ChangeRequestRoleUserEntity;
 import com.example.demo.mapper.ChangeRequestRoleUserMapper;
+import com.example.demo.model.BusinessException;
 import com.example.demo.model.ChangeRequestRoleUserModel;
+import com.example.demo.model.ErrorCodeCommon;
 import com.example.demo.repository.ChangeRequestRoleUserRepository;
 import com.example.demo.service.ChangeRequestRoleUserService;
 import com.example.demo.service.SysUserService;
-import com.example.demo.service.dto.BusinessException;
-import com.example.demo.service.dto.ErrorCodeCommon;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

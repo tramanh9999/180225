@@ -1,7 +1,7 @@
 package com.example.demo.service;
 
+import com.example.demo.model.BusinessException;
 import com.example.demo.model.ChangeRequestRoleModel;
-import com.example.demo.service.dto.BusinessException;
 import jakarta.transaction.Transactional;
 
 import java.util.List;
