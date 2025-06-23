@@ -51,6 +51,9 @@ public class ErrorCodeCommon {
     public static final ErrorCodeCommon CHANGE_REQUEST_WORKFLOW_ID_NOT_FOUND =
             new ErrorCodeCommon("CHANGE_REQUEST_WORKFLOW_ID_NOT_FOUND",
                     "Change request workflow ID: {0} not found", HttpStatus.BAD_REQUEST);
+    public static final ErrorCodeCommon CHANGE_FLOW_NOT_FOUND =
+            new ErrorCodeCommon("1111", "ChangeFlowEntity not found with id: {0}",
+                    HttpStatus.NOT_FOUND);
     private final String code;
     private final String message;
     private final HttpStatus httpStatus;

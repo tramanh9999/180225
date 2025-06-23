@@ -15,12 +15,9 @@ import java.util.regex.Pattern;
 @AllArgsConstructor
 @Builder
 public class FlowEdgeModel {
-    // ObjectMapper để chuyển đổi JSON
     private static final ObjectMapper objectMapper = new ObjectMapper();
-    // Regex để khớp các handle ID dạng <ID>-<Direction>
     private static final Pattern NUMERIC_HANDLE_PATTERN =
             Pattern.compile("^(\\d+)-(input|output)$", Pattern.CASE_INSENSITIVE);
-    // Regex để khớp các handle ID dạng <NodePrefix>-<NodeInstanceId>-<Action>-<Direction>
     private static final Pattern CUSTOM_NODE_HANDLE_PATTERN =
             Pattern.compile("^(.*?)-(\\d+)-(Accept|Reject)-(output)$", Pattern.CASE_INSENSITIVE);
     private String id;
@@ -29,7 +26,6 @@ public class FlowEdgeModel {
     private ParsedHandleModel sourceHandle;
     private ParsedHandleModel targetHandle;
     private String type;
-    private boolean deletable;
 
     private static ParsedHandleModel parseHandleString(String handleString) {
         if (handleString == null || handleString.isEmpty()) {
@@ -38,7 +34,7 @@ public class FlowEdgeModel {
 
         ParsedHandleModel parsedHandle = new ParsedHandleModel();
         parsedHandle.setRawHandleId(handleString);
-        parsedHandle.setType(HandleType.fromString(handleString)); // Phân loại kiểu handle
+        parsedHandle.setType(HandleType.fromString(handleString));
 
         Matcher numericMatcher = NUMERIC_HANDLE_PATTERN.matcher(handleString);
         if (numericMatcher.matches()) {
@@ -47,7 +43,6 @@ public class FlowEdgeModel {
             } catch (NumberFormatException e) {
             }
         } else {
-            // Thử khớp mẫu <NodePrefix>-<NodeInstanceId>-<Action>-<Direction>
             Matcher customMatcher = CUSTOM_NODE_HANDLE_PATTERN.matcher(handleString);
             if (customMatcher.matches()) {
                 parsedHandle.setCustomAction(customMatcher.group(3));
@@ -57,17 +52,14 @@ public class FlowEdgeModel {
         return parsedHandle;
     }
 
-
     public static FlowEdgeModel fromSimpleFlowEdge(FlowEdge simpleEdge) {
         FlowEdgeModel model = new FlowEdgeModel();
         model.setId(simpleEdge.getId());
         model.setSource(simpleEdge.getSource());
         model.setTarget(simpleEdge.getTarget());
         model.setType(simpleEdge.getType());
-        model.setDeletable(simpleEdge.isDeletable());
         model.setSourceHandle(parseHandleString(simpleEdge.getSourceHandle()));
         model.setTargetHandle(parseHandleString(simpleEdge.getTargetHandle()));
         return model;
     }
-
 }

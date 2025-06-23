@@ -1,17 +1,20 @@
 package com.example.demo.enums;
 
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+/**
+ * Enum representing the type of handle, either input or output.
+ * It can also represent a default state when the handle type is not specified.
+ */
+@Getter
+@RequiredArgsConstructor
 public enum HandleType {
-    INPUT("input"), OUTPUT("output"),
-    DEFAULT(null); // Cho các handle mặc định hoặc không xác định rõ
+    INPUT("input"), OUTPUT("output"), DEFAULT(null);
 
     private final String value;
 
-    HandleType(String value) {
-        this.value = value;
-    }
-
-    // Phương thức tiện ích để chuyển đổi từ String sang HandleType
-    // Phương thức này chỉ phân loại kiểu handle dựa trên hậu tố
     public static HandleType fromString(String handleString) {
         if (handleString == null) {
             return DEFAULT;
@@ -19,14 +22,9 @@ public enum HandleType {
         if (handleString.endsWith("-input")) {
             return INPUT;
         }
-        if (handleString.endsWith("-output")) { // Kiểm tra output chung sau các output cụ thể
+        if (handleString.endsWith("-output")) {
             return OUTPUT;
         }
-        // Thêm các loại handle khác nếu có trong tương lai
-        return DEFAULT; // Trả về mặc định nếu không khớp
-    }
-
-    public String getValue() {
-        return value;
+        return DEFAULT;
     }
 }

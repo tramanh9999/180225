@@ -5,12 +5,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Model representing a flow node in a workflow system.
+ * It includes an ID, type, data associated with the node.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class FlowNodeModel {
     private String id;
-    private NodeType type; // Sử dụng Enum cho loại node để có ngữ nghĩa hơn
-    private FlowNodeDataModel data; // Sử dụng DTO chi tiết cho trường data
-    private boolean deletable;
+    private NodeType type;
+    private FlowNodeDataModel data;
 }

@@ -2,16 +2,12 @@ package com.example.demo.controller;
 
 import com.example.demo.constants.ServerUrl;
 import com.example.demo.model.ChangeRequestRoleModel;
-import com.example.demo.model.FlowNodeModel;
-import com.example.demo.model.NextFlowTargetModel;
+import com.example.demo.model.FlowNavigationInfo;
 import com.example.demo.service.ChangeRequestRoleService;
 import com.example.demo.service.impl.FlowManagementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -39,20 +35,13 @@ public class ChangeRequestController {
         return ResponseEntity.ok(roles);
     }
 
-    @GetMapping("/{id}/change-status/{changeStatusId}/next-target")
-    public ResponseEntity<NextFlowTargetModel> findNextTargetFromChangeStatusIdyChangeRequestId(
-            @PathVariable("id") Long changeRequestId,
-            @PathVariable("changeStatusId") Long changeStatusId) {
-        var nextFlowTargetModel =
-                flowManagementService.findNextTargetFromChangeStatusId(changeRequestId,
-                        changeStatusId);
-        return ResponseEntity.ok(nextFlowTargetModel);
-    }
-
-    @GetMapping("/test-change/change-status/{changeStatusId}/next-target")
-    public ResponseEntity<FlowNodeModel> testNextTargetFromChangeStatusIdyChangeRequestId(
-            @PathVariable("changeStatusId") Long changeStatusId) {
-        var nextFlowTargetModel = flowManagementService.getNextNodeDetails(1L, changeStatusId);
-        return ResponseEntity.ok(nextFlowTargetModel);
+    @GetMapping("/change-flow/{changeFlowId}/change-flow-node/{changeFlowNodeId}")
+    public ResponseEntity<FlowNavigationInfo> findCurrentAndNextNodeByCurrentPoint(
+            @PathVariable Long changeFlowId,
+            @PathVariable("changeFlowNodeId") String changeFlowNodeId,
+            @RequestParam(value = "handleId", required = false) String handleId) {
+        var flowNodeModel = flowManagementService.findCurrentAndNextNodeByCurrentPoint(changeFlowId,
+                changeFlowNodeId, handleId);
+        return ResponseEntity.ok(flowNodeModel);
     }
 }
