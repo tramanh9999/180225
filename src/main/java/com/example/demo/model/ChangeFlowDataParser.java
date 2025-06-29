@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
  * Utility class for parsing and converting flow node and edge data to and from JSON.
  */
 @Slf4j
-public class FlowDataParser {
+public class ChangeFlowDataParser {
 
 
     private static final String KEY_DELIMITER = "::";
@@ -32,7 +32,7 @@ public class FlowDataParser {
             return JSON.parseObject(jsonString, new TypeReference<>() {
             });
         } catch (Exception e) {
-            log.error("Error parsing JSON string to List<FlowNodeDTO> using Fastjson: {}",
+            log.error("Error parsing JSON string to List<FlowNodeModel> using Fastjson: {}",
                     e.getMessage(), e);
             return Collections.emptyList();
         }
@@ -41,14 +41,14 @@ public class FlowDataParser {
     /**
      * Convert a list of FlowNodeModel objects to a JSON string.
      *
-     * @param nodeDTOs the list of FlowNodeModel objects
+     * @param nodeModels the list of FlowNodeModel objects
      * @return the JSON string representation, or null if conversion fails
      */
-    public static String convertFlowNodesDtoListToJson(List<FlowNodeModel> nodeDTOs) {
+    public static String convertFlowNodesModelListToJson(List<FlowNodeModel> nodeModels) {
         try {
-            return JSON.toJSONString(nodeDTOs, SerializerFeature.PrettyFormat);
+            return JSON.toJSONString(nodeModels, SerializerFeature.PrettyFormat);
         } catch (Exception e) {
-            log.error("Error converting List<FlowNodeDTO> to JSON string using Fastjson: {}",
+            log.error("Error converting List<FlowNodeModel> to JSON string using Fastjson: {}",
                     e.getMessage(), e);
             return null;
         }
@@ -65,11 +65,12 @@ public class FlowDataParser {
             return Collections.emptyList();
         }
         try {
-            List<FlowEdge> flowEdges = JSON.parseObject(jsonString, new TypeReference<>() {
-            });
-            return flowEdges.stream().map(FlowEdgeModel::fromSimpleFlowEdge).toList();
+            List<FlowEdgeRawModel> flowEdgeRawModels =
+                    JSON.parseObject(jsonString, new TypeReference<>() {
+                    });
+            return flowEdgeRawModels.stream().map(FlowEdgeModel::fromSimpleFlowEdge).toList();
         } catch (Exception e) {
-            log.error("Error parsing JSON string to List<FlowEdgeDTO> using Fastjson: {}",
+            log.error("Error parsing JSON string to List<FlowEdgeModel> using Fastjson: {}",
                     e.getMessage(), e);
             return Collections.emptyList();
         }
@@ -78,14 +79,14 @@ public class FlowDataParser {
     /**
      * Convert a list of FlowEdgeModel objects to a JSON string.
      *
-     * @param edgeDTOs the list of FlowEdgeModel objects
+     * @param edgeModels the list of FlowEdgeModel objects
      * @return the JSON string representation, or null if conversion fails
      */
-    public static String convertFlowEdgesDtoListToJson(List<FlowEdgeModel> edgeDTOs) {
+    public static String convertFlowEdgesModelListToJson(List<FlowEdgeModel> edgeModels) {
         try {
-            return JSON.toJSONString(edgeDTOs, SerializerFeature.PrettyFormat);
+            return JSON.toJSONString(edgeModels, SerializerFeature.PrettyFormat);
         } catch (Exception e) {
-            log.error("Error converting List<FlowEdgeDTO> to JSON string using Fastjson: {}",
+            log.error("Error converting List<FlowEdgeModel> to JSON string using Fastjson: {}",
                     e.getMessage(), e);
             return null;
         }
@@ -94,21 +95,12 @@ public class FlowDataParser {
     /**
      * Create a unique mapKey from the source node ID and source handle ID.
      *
-     * @param sourceNodeId   ID of the source node.
      * @param sourceHandleId ID of the source handle (e.g., "Accept-output", "0-output").
      * @return The generated mapKey string.
      * @throws IllegalArgumentException if sourceNodeId or sourceHandleId is null or empty.
      */
-    public static String createMapKey(String sourceNodeId, String sourceHandleId) {
-        if (sourceNodeId == null || sourceNodeId.isEmpty()) {
-            throw new IllegalArgumentException("Source Node ID cannot be null or empty.");
-        }
-        // sourceHandleId can be null for start nodes or special cases, handle default if null/empty
-        String actualSourceHandleId =
-                (sourceHandleId == null || sourceHandleId.isEmpty()) ? "default-output" :
-                        sourceHandleId; // Or another default value you want
-
-        return sourceNodeId + KEY_DELIMITER + actualSourceHandleId;
+    public static String createMapKey(String sourceHandleId) {
+        return sourceHandleId;
     }
 
     /**

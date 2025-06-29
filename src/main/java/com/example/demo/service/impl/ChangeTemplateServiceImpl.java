@@ -84,36 +84,6 @@ public class ChangeTemplateServiceImpl implements ChangeTemplateService {
         var entity = changeTemplateRepository.findById(id).orElse(null);
         if (entity == null) return null;
         ChangeTemplateModel model = changeTemplateMapper.toDto(entity);
-        // Lấy danh sách role order by level, roleOrder
-        List<ChangeTemplateRoleEntity> roleEntities =
-                changeTemplateRoleRepository.findByChangeTemplateIdOrderByLevelAscRoleOrderAsc(id);
-        // Gom nhóm role theo level
-        Map<Integer, List<ChangeTemplateRoleEntity>> groupByLevel = roleEntities.stream()
-                .collect(Collectors.groupingBy(ChangeTemplateRoleEntity::getLevel));
-        List<LevelGroupModel> levelGroups =
-                groupByLevel.entrySet().stream().sorted(Map.Entry.comparingByKey()).map(e -> {
-                    String levelId = String.valueOf(e.getKey());
-                    String title = "Level " + e.getKey();
-                    // Lấy danh sách groupId ở level này
-                    List<Long> groupIds =
-                            e.getValue().stream().map(ChangeTemplateRoleEntity::getGroupId)
-                                    .collect(Collectors.toList());
-                    List<SysGroupModel> groups =
-                            groupRepository.findAllByIdIn(groupIds).stream().map(g -> {
-                                SysGroupModel gm = new SysGroupModel();
-                                gm.setId(g.getId());
-                                gm.setName(g.getName());
-                                gm.setDescription(g.getDescription());
-                                gm.setIsChangeRole(g.getIsChangeRole());
-                                gm.setGroupType(
-                                        g.getGroupType() != null ? g.getGroupType().getValue() :
-                                                null);
-                                return gm;
-                            }).collect(Collectors.toList());
-                    return LevelGroupModel.builder().id(levelId).title(title).changeRoles(groups)
-                            .build();
-                }).collect(Collectors.toList());
-        model.setLevels(levelGroups);
         return model;
     }
 

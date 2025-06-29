@@ -32,23 +32,25 @@ public class ChangeRequestApprovalController {
     }
 
     @PostMapping
-    public ResponseEntity<ChangeRequestApprovalModel> createApproval(
+    public ResponseEntity<List<ChangeRequestApprovalModel>> createApproval(
             @RequestBody ChangeRequestApprovalModel approvalDto) {
-        ChangeRequestApprovalModel createdApproval = approvalService.save(approvalDto);
+        List<ChangeRequestApprovalModel> createdApproval =
+                approvalService.saveList(List.of(approvalDto));
         return new ResponseEntity<>(createdApproval, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ChangeRequestApprovalModel> updateApproval(@PathVariable Long id,
-                                                                     @RequestBody
-                                                                     ChangeRequestApprovalModel approvalDto) {
+    public ResponseEntity<List<ChangeRequestApprovalModel>> updateApproval(@PathVariable Long id,
+                                                                           @RequestBody
+                                                                           ChangeRequestApprovalModel approvalDto) {
         // Check if approval exists
         if (approvalService.findById(id) == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
         approvalDto.setId(id);
-        ChangeRequestApprovalModel updatedApproval = approvalService.save(approvalDto);
+        List<ChangeRequestApprovalModel> updatedApproval =
+                approvalService.saveList(List.of(approvalDto));
         return new ResponseEntity<>(updatedApproval, HttpStatus.OK);
     }
 
@@ -85,4 +87,6 @@ public class ChangeRequestApprovalController {
                 approvalService.findByChangeRequestIdAndOverallStatus(changeRequestId, status);
         return new ResponseEntity<>(approvals, HttpStatus.OK);
     }
+
+
 }

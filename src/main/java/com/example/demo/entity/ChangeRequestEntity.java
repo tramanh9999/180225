@@ -26,4 +26,10 @@ public class ChangeRequestEntity {
 
     @Column(name = "CHANGE_TEMPLATE_ID")
     private Long changeTemplateId;
+
+    @Column(name = "CHANGE_STATUS_ID")
+    private Long changeStatusId;
+
+    @Column(name = "CHANGE_FLOW_NODE_STR_ID")
+    private String changeFlowNodeStrId;
 }

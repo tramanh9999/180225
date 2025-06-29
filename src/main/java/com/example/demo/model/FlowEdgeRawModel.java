@@ -9,11 +9,10 @@ import lombok.RequiredArgsConstructor;
  */
 @Data
 @RequiredArgsConstructor
-public class FlowEdge {
+public class FlowEdgeRawModel {
     private String id;
     private String source;
     private String target;
     private String sourceHandle;
     private String targetHandle;
-    private String type;
 }

@@ -18,4 +18,7 @@ public class ChangeRequestWorkflowEntity extends BaseEntity<Long> {
     @Column(name = "WORKFLOW_DATA")
     private String workflowData;
 
+    @Column(name = "NAME")
+    private String name;
+
 }

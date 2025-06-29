@@ -4,15 +4,21 @@ import com.example.demo.entity.ChangeRequestRoleEntity;
 import com.example.demo.mapper.ChangeRequestRoleMapper;
 import com.example.demo.model.*;
 import com.example.demo.repository.ChangeRequestRoleRepository;
+import com.example.demo.repository.ChangeRequestService;
 import com.example.demo.service.ChangeFlowNodeService;
 import com.example.demo.service.ChangeRequestRoleService;
 import com.example.demo.service.ChangeRequestRoleUserService;
 import com.example.demo.service.ChangeRequestWorkflowService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -22,11 +28,28 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ChangeRequestRoleServiceImpl implements ChangeRequestRoleService {
 
-    private final ChangeRequestRoleRepository repository;
-    private final ChangeRequestRoleUserService changeRequestRoleUserService;
-    private final ChangeRequestRoleMapper changeRequestRoleMapper;
-    private final ChangeFlowNodeService changeFlowNodeService;
-    private final ChangeRequestWorkflowService changeRequestWorkflowService;
+    // Use @Autowired for field injection.
+    // Fields should NOT be final when injected this way (as they are set after construction).
+    @Autowired
+    private ChangeRequestRoleRepository repository;
+
+    @Autowired
+    private ChangeRequestRoleUserService changeRequestRoleUserService;
+
+    @Autowired
+    private ChangeRequestRoleMapper changeRequestRoleMapper;
+
+    @Autowired
+    private ChangeFlowNodeService changeFlowNodeService;
+
+    @Autowired
+    private ChangeRequestWorkflowService changeRequestWorkflowService;
+
+    // For the circular dependency, apply @Lazy and @Autowired.
+    // This field also cannot be final.
+    @Lazy // This is still necessary to break the cycle
+    @Autowired
+    private ChangeRequestService changeRequestService;
 
 
     @Transactional
@@ -82,12 +105,18 @@ public class ChangeRequestRoleServiceImpl implements ChangeRequestRoleService {
                 changeRequestRoleUserService.findAllByChangeRequestId(changeRequestId);
         Map<Long, List<ChangeRequestRoleUserModel>> usersByChangeRequestRoleId = users.stream()
                 .collect(Collectors.groupingBy(ChangeRequestRoleUserModel::getChangeRequestRoleId));
-        return roles.stream().map(roleEntity -> {
+        List<ChangeRequestRoleModel> collect = roles.stream().map(roleEntity -> {
             List<ChangeRequestRoleUserModel> associatedUsers =
                     usersByChangeRequestRoleId.getOrDefault(roleEntity.getId(),
                             Collections.emptyList());
+
+            // Lấy danh sách các CAB user groups đã được nhóm
+
             return changeRequestRoleMapper.toDto(roleEntity, associatedUsers);
         }).collect(Collectors.toList());
+        // Lấy danh sách các CAB user groups đã được nhóm
+        collect = groupAndSortCabUserGroups2(collect);
+        return collect;
     }
 
     @Override
@@ -127,49 +156,145 @@ public class ChangeRequestRoleServiceImpl implements ChangeRequestRoleService {
     }
 
 
-    /**
-     * Lấy ra tất cả các ChangeRequestRoleModel mà một username được chỉ định thuộc về,
-     * trong một changeRequestId cụ thể.
-     *
-     * @param allChangeRequestRoles Danh sách tất cả các ChangeRequestRoleModel có sẵn.
-     * @param changeRequestId       ID của Change Request cần lọc.
-     * @param username              Tên người dùng cần tìm role.
-     * @return Danh sách các ChangeRequestRoleModel mà username đó có role trong Change Request được chỉ định.
-     */
-    public List<ChangeRequestRoleModel> getRolesForUserInChangeRequest(
-            List<ChangeRequestRoleModel> allChangeRequestRoles, Long changeRequestId,
-            String username) {
+    @Override
+    public List<ChangeRequestRoleModel> findAllChangeFlowNodesByChangeTemplateIdOrRequestId(
+            Long changeTemplateId, Long changeRequestId) throws BusinessException {
 
-        if (allChangeRequestRoles == null || username == null) {
-            return new ArrayList<>();
+        var isNotSelectChangeTemplate = changeTemplateId == null || changeTemplateId == 0L;
+        if (isNotSelectChangeTemplate) {
+            return Collections.emptyList();
         }
 
-        return allChangeRequestRoles.stream()
-                // Lọc theo changeRequestId trước để giảm số lượng đối tượng cần xử lý
-                .filter(role -> Objects.equals(role.getChangeRequestId(), changeRequestId))
-                // Kiểm tra xem username có trong danh sách 'users' hoặc 'cabUserGroups'
-                // hoặc trong 'groupedCabUserGroups' của mỗi role hay không
-                .filter(role -> {
-                    // Kiểm tra danh sách 'users' (Approval roles)
-                    boolean foundInUsers = role.getUsers() != null && role.getUsers().stream()
-                            .anyMatch(user -> username.equals(user.getUsername()));
+        var defaultCreateChangeId = 0L;
+        if (changeRequestId == null) {
+            changeRequestId = defaultCreateChangeId;
+        }
 
-                    // Kiểm tra danh sách 'cabUserGroups' (CAB roles, nếu có)
-                    boolean foundInCabUsers = role.getCabUserGroups() != null &&
-                            role.getCabUserGroups().stream()
-                                    .anyMatch(user -> username.equals(user.getUsername()));
+        var isCreateChange = Objects.equals(changeRequestId, defaultCreateChangeId);
+        if (!isCreateChange) {
+            ChangeRequestModel changeRequest = changeRequestService.findById(changeRequestId);
+            if (!Objects.equals(changeRequest.getChangeTemplateId(), changeTemplateId)) {
+                throw new BusinessException(ErrorCodeCommon.CHANGE_REQUEST_TEMPLATE_HAS_CHANGE,
+                        changeTemplateId);
+            }
+        }
 
-                    // Kiểm tra danh sách 'groupedCabUserGroups' (CAB roles được nhóm)
-                    // Đây là danh sách các list con của ChangeRequestRoleUserModel
-                    boolean foundInGroupedCabUsers = role.getGroupedCabUserGroups() != null &&
-                            role.getGroupedCabUserGroups().stream().flatMap(
-                                            group -> group.getUsers() != null ? group.getUsers().stream() :
-                                                    null) // Làm phẳng các danh sách con
-                                    .filter(Objects::nonNull) // Lọc bỏ các phần tử null nếu có
-                                    .anyMatch(user -> username.equals(user.getUsername()));
+        List<ChangeFlowNodeModel> flowNodeModelList =
+                changeFlowNodeService.findChangeFlowNodesByTemplateId(changeTemplateId);
+        Map<Long, ChangeFlowNodeModel> mapFlowNode = flowNodeModelList.stream()
+                .collect(Collectors.toMap(ChangeFlowNodeModel::getId, Function.identity()));
 
-                    return foundInUsers || foundInCabUsers || foundInGroupedCabUsers;
-                }).collect(Collectors.toList());
+        List<ChangeRequestRoleModel> requestRoleLst = new ArrayList<>();
+        Map<Long, List<ChangeRequestRoleUserModel>> usersByChangeRequestRoleId = new HashMap<>();
+
+        if (changeRequestId != defaultCreateChangeId) {
+            requestRoleLst = changeRequestRoleMapper.mapToDtos(
+                            repository.findAllByChangeRequestId(changeRequestId)).stream()
+                    .filter(role -> Objects.nonNull(role.getChangeFlowNodeId()) &&
+                            mapFlowNode.containsKey(role.getChangeFlowNodeId()))
+                    .peek(role -> role.setChangeFlowNode(
+                            mapFlowNode.get(role.getChangeFlowNodeId()))).toList();
+
+            List<ChangeRequestRoleUserModel> users =
+                    changeRequestRoleUserService.findAllByChangeRequestId(changeRequestId);
+            usersByChangeRequestRoleId = users.stream().collect(
+                    Collectors.groupingBy(ChangeRequestRoleUserModel::getChangeRequestRoleId));
+        }
+
+        Map<Long, ChangeRequestRoleModel> mapNodeWithRole = requestRoleLst.stream().collect(
+                Collectors.toMap(ChangeRequestRoleModel::getChangeFlowNodeId, Function.identity()));
+
+        AtomicInteger index = new AtomicInteger(flowNodeModelList.size());
+        Map<Long, List<ChangeRequestRoleUserModel>> finalUsersByChangeRequestRoleId =
+                usersByChangeRequestRoleId;
+        Long finalChangeRequestId = changeRequestId;
+
+        requestRoleLst = flowNodeModelList.stream().map(flowNode -> {
+            if (mapNodeWithRole.containsKey(flowNode.getId())) {
+                return mapNodeWithRole.get(flowNode.getId());
+            }
+            ChangeRequestRoleModel role =
+                    ChangeRequestRoleModel.builder().id((long) index.getAndDecrement())
+                            .changeFlowNodeId(flowNode.getId()).changeFlowNode(flowNode)
+                            .changeRequestId(finalChangeRequestId).changeFlowNode(flowNode).build();
+
+            finalUsersByChangeRequestRoleId.put(role.getId(),
+                    List.of(ChangeRequestRoleUserModel.builder().username(Strings.EMPTY).id(0L)
+                            .changeRequestRoleId(role.getId()).build()));
+            return role;
+        }).toList();
+
+
+        requestRoleLst = groupAndSortCabUserGroups2(requestRoleLst);
+
+        return requestRoleLst;
+    }
+
+
+    @Override
+    public List<ChangeRequestRoleModel> groupAndSortCabUserGroups2(
+            List<ChangeRequestRoleModel> items) {
+        if (items == null || items.isEmpty()) {
+            return items;
+        }
+
+        for (ChangeRequestRoleModel item : items) {
+            List<ChangeRequestRoleUserModel> cabUsers = item.getCabUserGroups();
+            if (cabUsers == null || cabUsers.isEmpty()) {
+                item.setWorkflowUsers(Collections.emptyList());
+                continue;
+            }
+
+            Map<Long, List<ChangeRequestRoleUserModel>> groupedByWorkflow =
+                    cabUsers.stream().collect(Collectors.groupingBy(user -> {
+                        if (user.getChangeRequestWorkflowId() != null) {
+                            return user.getChangeRequestWorkflowId();
+                        }
+                        return 0L;
+                    }));
+
+            Set<Long> setWorkflowIds = groupedByWorkflow.keySet();
+            Map<Long, ChangeRequestWorkflowModel> mapWorkflows =
+                    changeRequestWorkflowService.findByIdIn(setWorkflowIds.stream().toList());
+
+            List<ChangeRequestRoleUserWorkflowListModel> workflowUsersList = new ArrayList<>();
+            for (Map.Entry<Long, List<ChangeRequestRoleUserModel>> workflowEntry : groupedByWorkflow.entrySet()) {
+                List<ChangeRequestRoleUserModel> usersInCurrentWorkflow = workflowEntry.getValue();
+                List<ChangeRequestRoleUserModel> usersWithNonNullCabGroup =
+                        usersInCurrentWorkflow.stream().filter(user -> user.getCabGroup() != null)
+                                .toList();
+                Map<Integer, List<ChangeRequestRoleUserModel>> groupedByCabGroup = new TreeMap<>();
+                if (!usersWithNonNullCabGroup.isEmpty()) {
+                    groupedByCabGroup = usersWithNonNullCabGroup.stream().collect(
+                            Collectors.groupingBy(ChangeRequestRoleUserModel::getCabGroup,
+                                    () -> new TreeMap<>(Comparator.naturalOrder()),
+                                    Collectors.toList()));
+                }
+                List<List<ChangeRequestRoleUserModel>> sorted2DList = new ArrayList<>();
+                for (Map.Entry<Integer, List<ChangeRequestRoleUserModel>> entry : groupedByCabGroup.entrySet()) {
+                    List<ChangeRequestRoleUserModel> group = entry.getValue();
+                    List<ChangeRequestRoleUserModel> sortedGroup = group.stream()
+                            .sorted(Comparator.comparing(
+                                    ChangeRequestRoleUserModel::getCabGroupOrder,
+                                    Comparator.nullsLast(Comparator.naturalOrder())))
+                            .collect(Collectors.toList());
+                    sorted2DList.add(sortedGroup);
+                }
+                List<ChangeRequestRoleUserListModel> cabUserListModels = sorted2DList.stream()
+                        .map(oneGroup -> ChangeRequestRoleUserListModel.builder().users(oneGroup)
+                                .build()).collect(Collectors.toList());
+                workflowUsersList.add(ChangeRequestRoleUserWorkflowListModel.builder()
+                        .changeWorkflowId(workflowEntry.getKey()).changeWorkflowName(
+                                mapWorkflows.getOrDefault(workflowEntry.getKey(),
+                                        ChangeRequestWorkflowModel.builder()
+                                                .name("Not found workflow" + workflowEntry.getKey())
+                                                .build()).getName()).workflows(cabUserListModels)
+                        .build());
+            }
+            item.setWorkflowUsers(workflowUsersList);
+        }
+
+        return items;
     }
 
 

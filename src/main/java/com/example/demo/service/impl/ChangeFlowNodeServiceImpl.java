@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -38,5 +39,12 @@ public class ChangeFlowNodeServiceImpl implements ChangeFlowNodeService {
     @Override
     public Page<String> findPagingUsernameById(Long id, PagingRequestModel pagingRequestModel) {
         return changeFlowNodeRepository.findUsernamesByChangeFlowNodeId(id, pagingRequestModel);
+    }
+
+
+    @Override
+    public List<ChangeFlowNodeModel> findChangeFlowNodesByTemplateId(Long changeTemplateId) {
+        return new ArrayList<>(
+                changeFlowNodeRepository.findChangeFlowNodesByTemplateId(changeTemplateId));
     }
 }

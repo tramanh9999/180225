@@ -1,6 +1,7 @@
 package com.example.demo.service.impl;
 
 import com.example.demo.entity.ChangeRequestApprovalEntity;
+import com.example.demo.mapper.ChangeRequestApprovalMapper;
 import com.example.demo.model.ChangeRequestApprovalModel;
 import com.example.demo.repository.ChangeRequestApprovalRepository;
 import com.example.demo.service.ChangeRequestApprovalService;
@@ -9,8 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,6 +19,9 @@ public class ChangeRequestApprovalServiceImpl implements ChangeRequestApprovalSe
 
     @Autowired
     private ChangeRequestApprovalRepository approvalRepository;
+
+    @Autowired
+    private ChangeRequestApprovalMapper approvalMapper;
 
     @Override
     public ChangeRequestApprovalModel findById(Long id) {
@@ -33,17 +35,11 @@ public class ChangeRequestApprovalServiceImpl implements ChangeRequestApprovalSe
     }
 
     @Override
-    public ChangeRequestApprovalModel save(ChangeRequestApprovalModel approvalDto) {
-        ChangeRequestApprovalEntity approval = convertToEntity(approvalDto);
-
-        // Set created/modified dates if new entity
-        if (approval.getId() == null) {
-            approval.setCreatedDate(Timestamp.valueOf(LocalDateTime.now()));
-        }
-        approval.setModifiedDate(Timestamp.valueOf(LocalDateTime.now()));
-
-        ChangeRequestApprovalEntity savedApproval = approvalRepository.save(approval);
-        return convertToDto(savedApproval);
+    public List<ChangeRequestApprovalModel> saveList(
+            List<ChangeRequestApprovalModel> approvalDtos) {
+        List<ChangeRequestApprovalEntity> approvals = approvalMapper.toEntity(approvalDtos);
+        List<ChangeRequestApprovalEntity> savedApproval = approvalRepository.saveAll(approvals);
+        return approvalMapper.toModel(savedApproval);
     }
 
     @Override

@@ -1,11 +1,17 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 @Entity
 @Table(name = "CHANGE_REQUEST_WORKFLOW_DETAIL")
 @Data
+@Builder
+@AllArgsConstructor
+@RequiredArgsConstructor
 public class ChangeRequestWorkflowDetailEntity extends BaseEntity<Long> {
 
     @Id

@@ -19,4 +19,5 @@ public interface ChangeRequestWorkflowRepository
      * @return the list of ChangeRequestWorkflowEntity with the given IDs
      */
     List<ChangeRequestWorkflowEntity> findByIdIn(List<Long> ids);
+
 }

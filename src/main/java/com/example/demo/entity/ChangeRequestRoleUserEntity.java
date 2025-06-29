@@ -24,4 +24,7 @@ public class ChangeRequestRoleUserEntity extends BaseEntity<Long> {
     @Column(name = "CHANGE_REQUEST_ID")
     private Long changeRequestId;
 
+
+    @Column(name = "CHANGE_REQUEST_WORKFLOW_DETAIL_ID")
+    private Long changeRequestWorkflowDetailId;
 }

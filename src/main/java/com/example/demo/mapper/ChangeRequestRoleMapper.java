@@ -17,5 +17,7 @@ public interface ChangeRequestRoleMapper {
     ChangeRequestRoleModel toDto(ChangeRequestRoleEntity entity,
                                  List<ChangeRequestRoleUserModel> users);
 
+    List<ChangeRequestRoleModel> mapToDtos(List<ChangeRequestRoleEntity> entitys);
+
     ChangeRequestRoleEntity toEntity(ChangeRequestRoleModel roleModel);
 }

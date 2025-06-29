@@ -28,4 +28,6 @@ public interface ChangeFlowNodeService {
      * @return a page of usernames
      */
     Page<String> findPagingUsernameById(Long id, PagingRequestModel pagingRequestModel);
+
+    List<ChangeFlowNodeModel> findChangeFlowNodesByTemplateId(Long changeTemplateId);
 }

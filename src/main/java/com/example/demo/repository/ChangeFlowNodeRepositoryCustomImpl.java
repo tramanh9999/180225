@@ -1,5 +1,7 @@
 package com.example.demo.repository;
 
+import com.example.demo.enums.ChangeFlowNodeType;
+import com.example.demo.model.ChangeFlowNodeModel;
 import com.example.demo.model.PagingRequestModel;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -10,7 +12,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Repository
@@ -102,4 +106,71 @@ public class ChangeFlowNodeRepositoryCustomImpl implements ChangeFlowNodeReposit
         }
         return 0;
     }
+
+
+    /**
+     * Returns a list of change flow nodes for a given change template ID.
+     * Nodes are ordered by their level in ascending order.
+     *
+     * @param changeTemplateId the ID of the change template
+     * @return list of ChangeFlowNodeModel objects
+     */
+
+
+    @Override
+    public List<ChangeFlowNodeModel> findChangeFlowNodesByTemplateId(Long changeTemplateId) {
+        // Use Objects.requireNonNull for immediate validation, or throw IllegalArgumentException
+        Objects.requireNonNull(changeTemplateId, "Change Template ID cannot be null");
+        // Or your original validation:
+        // if (changeTemplateId == null) {
+        //     throw new IllegalArgumentException("Change Template ID cannot be null");
+        // }
+
+        // Use Text Blocks (Java 15+) for multi-line SQL for readability.
+        // If using older Java, concatenate strings or use a separate SQL file.
+        String sql = """
+                SELECT
+                    flowNode.ID,
+                    flowNode.NAME,
+                    flowNode.CHANGE_FLOW_ID,
+                    flowNode.TYPE,
+                    flowNode.NODE_LEVEL
+                FROM
+                    CHANGE_TEMPLATE changeTemplate
+                    JOIN CHANGE_FLOW changeFlow ON changeTemplate.CHANGE_FLOW_ID = changeFlow.ID
+                    JOIN CHANGE_FLOW_NODE flowNode ON changeFlow.ID = flowNode.CHANGE_FLOW_ID
+                WHERE
+                    changeTemplate.ID = :changeTemplateId
+                    AND changeTemplate.DELETED = 0
+                    AND changeTemplate.IS_ACTIVE = 1
+                    AND changeFlow.DELETED = 0
+                ORDER BY
+                    flowNode.NODE_LEVEL ASC
+                """;
+
+        Query query = entityManager.createNativeQuery(sql);
+        query.setParameter("changeTemplateId", changeTemplateId);
+
+        // Get the result list. createNativeQuery returns List<Object[]>.
+        List<Object[]> results = query.getResultList();
+
+        // Handle empty results gracefully
+        if (results.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // Map the Object[] results to ChangeFlowNodeModel using the builder pattern
+        return results.stream().map(row -> ChangeFlowNodeModel.builder()
+                .id(((Number) row[0]).longValue())         // Assuming ID is first column and a Number type
+                .name((String) row[1])                     // Assuming NAME is second column and a String
+                .changeFlowId(
+                        ((Number) row[2]).longValue()) // Assuming CHANGE_FLOW_ID is third and Number
+                .type((ChangeFlowNodeType) row[3])                     // Assuming TYPE is fourth
+                // and String
+                .nodeLevel(
+                        ((Number) row[4]).intValue())   // Assuming NODE_LEVEL is fifth and Number
+                .build()).collect(Collectors.toList());
+    }
+
+
 }

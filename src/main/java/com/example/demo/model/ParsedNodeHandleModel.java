@@ -1,5 +1,6 @@
 package com.example.demo.model;
 
+import com.example.demo.enums.ApprovalResultStatus;
 import com.example.demo.enums.HandleType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,9 +13,11 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ParsedHandleModel {
+public class ParsedNodeHandleModel {
     private String rawHandleId;
+
+    private String nodeId;
     private HandleType type;
     private Long changeStatusId;
-    private String customAction;
+    private ApprovalResultStatus customAction;
 }

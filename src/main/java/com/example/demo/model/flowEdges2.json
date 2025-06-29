@@ -1,0 +1,269 @@
+[
+  {
+    "id": "edge-start-to-SUBMISSION_PLANNING-init",
+    "source": "start",
+    "target": "SUBMISSION_PLANNING-init",
+    "targetHandle": "0-input",
+    "type": "default",
+    "deletable": false,
+    "markerEnd": {
+      "type": "arrowclosed"
+    }
+  },
+  {
+    "style": {
+      "strokeWidth": 2,
+      "strokeDasharray": "0"
+    },
+    "markerEnd": {
+      "type": "arrowclosed",
+      "width": 15,
+      "height": 15
+    },
+    "source": "SUBMISSION_PLANNING-init",
+    "sourceHandle": "303-output",
+    "target": "APPROVAL-1750652111589",
+    "targetHandle": "305-input",
+    "id": "reactflow__edge-SUBMISSION_PLANNING-init303-output-APPROVAL-1750652111589305-input"
+  },
+  {
+    "style": {
+      "strokeWidth": 2,
+      "strokeDasharray": "0"
+    },
+    "markerEnd": {
+      "type": "arrowclosed",
+      "width": 15,
+      "height": 15
+    },
+    "source": "APPROVAL-1750652111589",
+    "sourceHandle": "305-output",
+    "target": "APPROVAL_NODE-1750652199562",
+    "targetHandle": "APPROVAL_NODE-1750652199562-input",
+    "id": "reactflow__edge-APPROVAL-1750652111589305-output-APPROVAL_NODE-1750652199562APPROVAL_NODE-1750652199562-input"
+  },
+  {
+    "style": {
+      "strokeWidth": 2,
+      "strokeDasharray": "0"
+    },
+    "markerEnd": {
+      "type": "arrowclosed",
+      "width": 15,
+      "height": 15
+    },
+    "source": "APPROVAL_NODE-1750652199562",
+    "sourceHandle": "APPROVAL_NODE-1750652199562-Reject-output",
+    "target": "APPROVAL-1750652111589",
+    "targetHandle": "307-input",
+    "id": "reactflow__edge-APPROVAL_NODE-1750652199562APPROVAL_NODE-1750652199562-Reject-output-APPROVAL-1750652111589307-input"
+  },
+  {
+    "style": {
+      "strokeWidth": 2,
+      "strokeDasharray": "0"
+    },
+    "markerEnd": {
+      "type": "arrowclosed",
+      "width": 15,
+      "height": 15
+    },
+    "source": "APPROVAL_NODE-1750652199562",
+    "sourceHandle": "APPROVAL_NODE-1750652199562-Accept-output",
+    "target": "APPROVAL_NODE-1750652256172",
+    "targetHandle": "APPROVAL_NODE-1750652256172-input",
+    "id": "reactflow__edge-APPROVAL_NODE-1750652199562APPROVAL_NODE-1750652199562-Accept-output-APPROVAL_NODE-1750652256172APPROVAL_NODE-1750652256172-input"
+  },
+  {
+    "style": {
+      "strokeWidth": 2,
+      "strokeDasharray": "0"
+    },
+    "markerEnd": {
+      "type": "arrowclosed",
+      "width": 15,
+      "height": 15
+    },
+    "source": "APPROVAL-1750652111589",
+    "sourceHandle": "307-output",
+    "target": "SUBMISSION_PLANNING-init",
+    "targetHandle": "0-input",
+    "id": "reactflow__edge-APPROVAL-1750652111589307-output-SUBMISSION_PLANNING-init0-input"
+  },
+  {
+    "style": {
+      "strokeWidth": 2,
+      "strokeDasharray": "0"
+    },
+    "markerEnd": {
+      "type": "arrowclosed",
+      "width": 15,
+      "height": 15
+    },
+    "source": "APPROVAL_NODE-1750652256172",
+    "sourceHandle": "APPROVAL_NODE-1750652256172-Reject-output",
+    "target": "APPROVAL-1750652111589",
+    "targetHandle": "315-input",
+    "id": "reactflow__edge-APPROVAL_NODE-1750652256172APPROVAL_NODE-1750652256172-Reject-output-APPROVAL-1750652111589315-input"
+  },
+  {
+    "style": {
+      "strokeWidth": 2,
+      "strokeDasharray": "0"
+    },
+    "markerEnd": {
+      "type": "arrowclosed",
+      "width": 15,
+      "height": 15
+    },
+    "source": "APPROVAL-1750652111589",
+    "sourceHandle": "315-output",
+    "target": "SUBMISSION_PLANNING-init",
+    "targetHandle": "0-input",
+    "id": "reactflow__edge-APPROVAL-1750652111589315-output-SUBMISSION_PLANNING-init0-input"
+  },
+  {
+    "style": {
+      "strokeWidth": 2,
+      "strokeDasharray": "0"
+    },
+    "markerEnd": {
+      "type": "arrowclosed",
+      "width": 15,
+      "height": 15
+    },
+    "source": "APPROVAL_NODE-1750652256172",
+    "sourceHandle": "APPROVAL_NODE-1750652256172-Accept-output",
+    "target": "CAB_NODE-1750652315923",
+    "targetHandle": "CAB_NODE-1750652315923-input",
+    "id": "reactflow__edge-APPROVAL_NODE-1750652256172APPROVAL_NODE-1750652256172-Accept-output-CAB_NODE-1750652315923CAB_NODE-1750652315923-input"
+  },
+  {
+    "style": {
+      "strokeWidth": 2,
+      "strokeDasharray": "0"
+    },
+    "markerEnd": {
+      "type": "arrowclosed",
+      "width": 15,
+      "height": 15
+    },
+    "source": "CAB_NODE-1750652315923",
+    "sourceHandle": "CAB_NODE-1750652315923-Reject-output",
+    "target": "APPROVAL-1750652111589",
+    "targetHandle": "316-input",
+    "id": "reactflow__edge-CAB_NODE-1750652315923CAB_NODE-1750652315923-Reject-output-APPROVAL-1750652111589316-input"
+  },
+  {
+    "style": {
+      "strokeWidth": 2,
+      "strokeDasharray": "0"
+    },
+    "markerEnd": {
+      "type": "arrowclosed",
+      "width": 15,
+      "height": 15
+    },
+    "source": "APPROVAL-1750652111589",
+    "sourceHandle": "316-output",
+    "target": "SUBMISSION_PLANNING-init",
+    "targetHandle": "0-input",
+    "id": "reactflow__edge-APPROVAL-1750652111589316-output-SUBMISSION_PLANNING-init0-input"
+  },
+  {
+    "style": {
+      "strokeWidth": 2,
+      "strokeDasharray": "0"
+    },
+    "markerEnd": {
+      "type": "arrowclosed",
+      "width": 15,
+      "height": 15
+    },
+    "source": "CAB_NODE-1750652315923",
+    "sourceHandle": "CAB_NODE-1750652315923-Accept-output",
+    "target": "APPROVAL-1750652111589",
+    "targetHandle": "319-input",
+    "id": "reactflow__edge-CAB_NODE-1750652315923CAB_NODE-1750652315923-Accept-output-APPROVAL-1750652111589319-input"
+  },
+  {
+    "style": {
+      "strokeWidth": 2,
+      "strokeDasharray": "0"
+    },
+    "markerEnd": {
+      "type": "arrowclosed",
+      "width": 15,
+      "height": 15
+    },
+    "source": "APPROVAL-1750652111589",
+    "sourceHandle": "319-output",
+    "target": "IMPLEMENTATION-1750652339015",
+    "targetHandle": "309-input",
+    "id": "reactflow__edge-APPROVAL-1750652111589319-output-IMPLEMENTATION-1750652339015309-input"
+  },
+  {
+    "style": {
+      "strokeWidth": 2,
+      "strokeDasharray": "0"
+    },
+    "markerEnd": {
+      "type": "arrowclosed",
+      "width": 15,
+      "height": 15
+    },
+    "source": "IMPLEMENTATION-1750652339015",
+    "sourceHandle": "308-output",
+    "target": "REVIEW_CLOSE-1750652361831",
+    "targetHandle": "311-input",
+    "id": "reactflow__edge-IMPLEMENTATION-1750652339015308-output-REVIEW_CLOSE-1750652361831311-input"
+  },
+  {
+    "style": {
+      "strokeWidth": 2,
+      "strokeDasharray": "0"
+    },
+    "markerEnd": {
+      "type": "arrowclosed",
+      "width": 15,
+      "height": 15
+    },
+    "source": "REVIEW_CLOSE-1750652361831",
+    "sourceHandle": "311-output",
+    "target": "end",
+    "targetHandle": null,
+    "id": "reactflow__edge-REVIEW_CLOSE-1750652361831311-output-end"
+  },
+  {
+    "style": {
+      "strokeWidth": 2,
+      "strokeDasharray": "0"
+    },
+    "markerEnd": {
+      "type": "arrowclosed",
+      "width": 15,
+      "height": 15
+    },
+    "source": "APPROVAL_NODE-1750653293292",
+    "sourceHandle": "APPROVAL_NODE-1750653293292-Accept-output",
+    "target": "IMPLEMENTATION-1750652339015",
+    "targetHandle": "309-input",
+    "id": "reactflow__edge-APPROVAL_NODE-1750653293292APPROVAL_NODE-1750653293292-Accept-output-IMPLEMENTATION-1750652339015309-input"
+  },
+  {
+    "style": {
+      "strokeWidth": 2,
+      "strokeDasharray": "0"
+    },
+    "markerEnd": {
+      "type": "arrowclosed",
+      "width": 15,
+      "height": 15
+    },
+    "source": "CAB_NODE-1750652315923",
+    "sourceHandle": "CAB_NODE-1750652315923-Accept-output",
+    "target": "APPROVAL_NODE-1750653293292",
+    "targetHandle": "APPROVAL_NODE-1750653293292-input",
+    "id": "reactflow__edge-CAB_NODE-1750652315923CAB_NODE-1750652315923-Accept-output-APPROVAL_NODE-1750653293292APPROVAL_NODE-1750653293292-input"
+  }
+]

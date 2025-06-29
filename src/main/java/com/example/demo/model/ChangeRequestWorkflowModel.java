@@ -15,4 +15,6 @@ public class ChangeRequestWorkflowModel extends BaseModel {
     private Long id;
     private Long changeId;
     private String workflowData;
+
+    private String name;
 }

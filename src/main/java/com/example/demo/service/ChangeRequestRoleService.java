@@ -30,4 +30,16 @@ public interface ChangeRequestRoleService {
      * @throws BusinessException if validation fails
      */
     void validateList(List<ChangeRequestRoleModel> roles);
+
+    List<ChangeRequestRoleModel> findAllChangeFlowNodesByChangeTemplateIdOrRequestId(
+            Long changeTemplateId, Long changeRequestId) throws BusinessException;
+
+    /**
+     * Group and sort Change Request Roles by user groups.
+     * This method groups the roles by user groups and sorts them within each group.
+     *
+     * @param items The list of Change Request Role models to group and sort
+     * @return
+     */
+    List<ChangeRequestRoleModel> groupAndSortCabUserGroups2(List<ChangeRequestRoleModel> items);
 }

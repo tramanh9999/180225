@@ -22,4 +22,7 @@ public class ChangeTemplateEntity extends BaseEntity<Long> {
 
     @Column(name = "DELETED")
     private Integer deleted;
+
+    @Column(name = "CHANGE_FLOW_ID")
+    private Long changeFlowId;
 }

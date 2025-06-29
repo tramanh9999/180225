@@ -1,6 +1,6 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.model.FlowEdge;
+import com.example.demo.model.FlowEdgeRawModel;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -18,9 +18,9 @@ public class FlowEdgeLoader {
      * @return List of FlowEdge objects
      * @throws IOException if parsing fails
      */
-    public static List<FlowEdge> loadFromJsonString(String jsonString) throws IOException {
+    public static List<FlowEdgeRawModel> loadFromJsonString(String jsonString) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.readValue(jsonString, new TypeReference<List<FlowEdge>>() {
+        return objectMapper.readValue(jsonString, new TypeReference<List<FlowEdgeRawModel>>() {
         });
     }
 
@@ -31,7 +31,7 @@ public class FlowEdgeLoader {
      * @return List of FlowEdge objects
      * @throws IOException if file reading or parsing fails
      */
-    public static List<FlowEdge> loadFromFile(String filePath) throws IOException {
+    public static List<FlowEdgeRawModel> loadFromFile(String filePath) throws IOException {
         String content = new String(Files.readAllBytes(Paths.get(filePath)));
         return loadFromJsonString(content);
     }
@@ -44,7 +44,7 @@ public class FlowEdgeLoader {
             // Example loading from file
             String filePath =
                     "/Users/anhhtjse/Fullstack/demo/src/main/java/com/example/demo/flow/flowEdges.json";
-            List<FlowEdge> edges = loadFromFile(filePath);
+            List<FlowEdgeRawModel> edges = loadFromFile(filePath);
             System.out.println("Loaded " + edges.size() + " flow edges from file");
 
             // Print first edge as example

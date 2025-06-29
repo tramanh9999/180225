@@ -20,4 +20,5 @@ public class ChangeRequestModel extends BaseModel {
     private Integer deleted;
     private Long changeTemplateId;
     private Long changeStatusId;
+    private String changeFlowNodeStrId;
 }

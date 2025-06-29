@@ -4,11 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.util.List;
-import java.util.Map;
 
-import com.example.demo.model.ChangeTemplateRoleModel;
-import com.example.demo.model.LevelGroupModel;
+import java.util.List;
 
 @Data
 @Builder
@@ -20,5 +17,7 @@ public class ChangeTemplateModel {
     private String name;
     private String description;
     private List<LevelGroupModel> levels;
+
+    private Long changeFlowId;
 
 }

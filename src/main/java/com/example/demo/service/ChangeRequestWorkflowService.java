@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.model.ChangeRequestWorkflowModel;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -9,7 +10,7 @@ import java.util.Map;
  * Service interface for managing Change Request Workflows.
  */
 public interface ChangeRequestWorkflowService {
-    
+
     /**
      * Find all ChangeRequestWorkflowModel by their IDs.
      *
@@ -17,4 +18,8 @@ public interface ChangeRequestWorkflowService {
      * @return a map of ChangeRequestWorkflowModel with the ID as key and the model as value
      */
     Map<Long, ChangeRequestWorkflowModel> findByIdIn(List<Long> ids);
+
+    @Transactional(readOnly = true)
+        // Read-only for performance optimization
+    ChangeRequestWorkflowModel getWorkflowById(Long id);
 }

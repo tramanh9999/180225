@@ -1,0 +1,17 @@
+package com.example.demo.model;
+
+import lombok.*;
+
+// No need to extend BaseModel if it's purely a DTO for service layer
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder // Using @Builder for DTOs
+public class ChangeRequestWorkflowDetailModel {
+    private Long id;
+    private Long changeRequestWorkflowId;
+    private Long changeNodeId;
+    // Add any other fields that might be relevant for your business logic
+    // even if they are not directly in the entity (e.g., nodeName, workflowName if enriched)
+}

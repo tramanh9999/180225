@@ -1,5 +1,6 @@
 package com.example.demo.model;
 
+import com.example.demo.enums.ChangeStage;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,7 +15,7 @@ public class ChangeStatusModel {
     private String name;
     private String description;
     private String action;
-    private String stage;
+    private ChangeStage stage;
     private Date createdDate;
     private String createdBy;
     private String modifiedBy;

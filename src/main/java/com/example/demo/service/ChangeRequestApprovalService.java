@@ -10,7 +10,7 @@ public interface ChangeRequestApprovalService {
 
     List<ChangeRequestApprovalModel> findAll();
 
-    ChangeRequestApprovalModel save(ChangeRequestApprovalModel approvalDto);
+    List<ChangeRequestApprovalModel> saveList(List<ChangeRequestApprovalModel> approvalDto);
 
     void deleteById(Long id);
 

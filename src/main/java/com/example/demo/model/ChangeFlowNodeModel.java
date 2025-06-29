@@ -4,7 +4,7 @@ import com.example.demo.enums.ChangeFlowNodeType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Model representing a change flow node.
@@ -12,10 +12,13 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 @AllArgsConstructor
-@NoArgsConstructor
+@RequiredArgsConstructor
 public class ChangeFlowNodeModel {
     private Long id;
     private Long changeFlowId;
     private ChangeFlowNodeType type;
-    private Integer level;
+    private Integer nodeLevel;
+    private String name;
+
+
 }
