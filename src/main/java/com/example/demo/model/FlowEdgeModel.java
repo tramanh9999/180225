@@ -25,7 +25,6 @@ import static com.example.demo.enums.FlowConstants.*;
 @Slf4j
 public class FlowEdgeModel {
 
-
     private String id;
     private String sourceNodeId;
     private String targetNodeId;
@@ -35,12 +34,7 @@ public class FlowEdgeModel {
     private FlowNodeModel sourceNode;
     private FlowNodeModel targetNode;
 
-
-    private String transitionCategory;
-    private String description;
-
     private Long changeFlowId;
-
     private ApprovalResultStatus resultStatus;
 
 
@@ -53,48 +47,35 @@ public class FlowEdgeModel {
         parsedHandle.setRawHandleId(handleString);
         parsedHandle.setType(HandleType.fromHandleIdString(handleString));
 
-        Matcher numericMatcher = NUMERIC_HANDLE_PATTERN.matcher(handleString);
-        Matcher customApprovalMatcher = CUSTOM_NODE_HANDLE_PATTERN.matcher(handleString);
+        Matcher numericMatcher = CHANGE_STATUS_ID_HANDLE_PATTERN.matcher(handleString);
+        Matcher customApprovalMatcher = NODE_APPROVAL_HANDLE_PATTERN.matcher(handleString);
         Matcher nodeMatcher = NODE_ID_HANDLE_PATTERN.matcher(handleString);
 
         if (numericMatcher.matches()) {
             try {
-                parsedHandle.setChangeStatusId(
-                        Long.parseLong(numericMatcher.group(NUMERIC_ID_GROUP)));
+                parsedHandle.setChangeStatusId(Long.parseLong(numericMatcher.group(
+                        CHANGE_STATUS_ID_HANDLE_PATTERN__CHANGE_STATUS_ID_INDEX)));
             } catch (NumberFormatException e) {
                 log.error("Failed to parse change status ID from numeric handle: '{}'. Error: {}",
                         handleString, e.getMessage());
             }
         } else if (customApprovalMatcher.matches()) {
-            Matcher customMatcher = CUSTOM_NODE_HANDLE_PATTERN.matcher(handleString);
-            if (customMatcher.matches()) {
-                String nodeIdPart = customMatcher.group(0);
-                parsedHandle.setNodeId(nodeIdPart);
-                parsedHandle.setCustomAction(
-                        ApprovalResultStatus.fromValue(customMatcher.group(CUSTOM_ACTION_GROUP))
-                                .orElse(ApprovalResultStatus.UNKNOWN));
-            } else {
-                log.debug(
-                        "Handle string '{}' did not match any known numeric or custom node handle patterns. " +
-                                "Type remains as determined by fromHandleIdString or defaulted.",
-                        handleString);
-            }
+            String nodeIdPart =
+                    customApprovalMatcher.group(NODE_APPROVAL_HANDLE_PATTERN__NODE_ID_INDEX);
+            parsedHandle.setNodeId(nodeIdPart);
+            parsedHandle.setCustomAction(ApprovalResultStatus.fromValue(customApprovalMatcher.group(
+                            NODE_APPROVAL_HANDLE_PATTERN__NODE_APPROVAL_ACTION_INDEX))
+                    .orElse(ApprovalResultStatus.UNKNOWN));
         } else if (nodeMatcher.matches()) {
-            Matcher nodeIdMatcher = NODE_ID_HANDLE_PATTERN.matcher(handleString);
-            if (nodeIdMatcher.matches()) {
-                String nodeIdPart = nodeIdMatcher.group(0);
-                parsedHandle.setNodeId(nodeIdPart);
-                parsedHandle.setCustomAction(ApprovalResultStatus.fromValue(nodeIdMatcher.group(1))
-                        .orElse(ApprovalResultStatus.UNKNOWN));
-                parsedHandle.setType(
-                        nodeIdMatcher.group(2).equalsIgnoreCase(FlowConstants.INPUT_KEYWORD) ?
-                                HandleType.INPUT : HandleType.OUTPUT);
-            } else {
-                log.debug("Handle string '{}' did not match numeric or custom patterns. " +
-                                "Type remains as determined by fromHandleIdString or defaulted.",
-                        handleString);
-                throw new BusinessException(ErrorCodeCommon.INVALID_HANDLE_FORMAT, handleString);
-            }
+            String nodeIdPart = nodeMatcher.group(NODE_ID_HANDLE_PATTERN__NODE_ID_INDEX);
+            parsedHandle.setNodeId(nodeIdPart);
+            parsedHandle.setType(nodeMatcher.group(NODE_ID_HANDLE_PATTERN__HANDLE_TYPE_INDEX)
+                    .equalsIgnoreCase(FlowConstants.INPUT_KEYWORD) ? HandleType.INPUT :
+                    HandleType.OUTPUT);
+        } else {
+            log.debug("Handle string '{}' did not match any known patterns. " +
+                    "Type remains as determined by fromHandleIdString or defaulted.", handleString);
+            throw new BusinessException(ErrorCodeCommon.INVALID_HANDLE_FORMAT, handleString);
         }
 
         return parsedHandle;

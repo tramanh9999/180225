@@ -1,15 +1,19 @@
 package com.example.demo.model;
 
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 
+/**
+ * Model representing indexed change flow data.
+ * It contains indexed edges and nodes, providing methods to retrieve them as lists.
+ */
 @Data
-// DTO nội bộ để trả về cả nodes, edges và Map tối ưu
+@NoArgsConstructor
+@Builder
 public class IndexedChangeFlowDataModel {
     private Map<String, FlowEdgeModel> indexedEdges;
     private Map<String, FlowNodeModel> indexedNodes;
@@ -18,17 +22,6 @@ public class IndexedChangeFlowDataModel {
                                       Map<String, FlowNodeModel> indexedNodes) {
         this.indexedEdges = indexedEdges;
         this.indexedNodes = indexedNodes;
-    }
-
-
-    public List<FlowNodeModel> getNodes() {
-        return indexedNodes != null ? new ArrayList<>(indexedNodes.values()) :
-                Collections.emptyList();
-    }
-
-    public List<FlowEdgeModel> getEdges() {
-        return indexedEdges != null ? new ArrayList<>(indexedEdges.values()) :
-                Collections.emptyList();
     }
 
 }

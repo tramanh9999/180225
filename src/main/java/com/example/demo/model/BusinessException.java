@@ -1,9 +1,12 @@
 package com.example.demo.model;
 
 
+import lombok.Getter;
+
 import java.text.MessageFormat;
 import java.util.Arrays;
 
+@Getter
 public class BusinessException extends RuntimeException {
     private final ErrorCodeCommon errorCode;
     private final Object[] messageArgs;

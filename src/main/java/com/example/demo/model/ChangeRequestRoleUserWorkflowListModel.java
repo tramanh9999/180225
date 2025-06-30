@@ -16,5 +16,5 @@ public class ChangeRequestRoleUserWorkflowListModel extends BaseModel {
 
     Long changeWorkflowId;
     String changeWorkflowName;
-    List<ChangeRequestRoleUserListModel> workflows;
+    List<ChangeRequestRoleUserListModel> groups;
 }

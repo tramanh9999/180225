@@ -45,12 +45,6 @@ public class FlowEdgeLoader {
             String filePath =
                     "/Users/anhhtjse/Fullstack/demo/src/main/java/com/example/demo/flow/flowEdges.json";
             List<FlowEdgeRawModel> edges = loadFromFile(filePath);
-            System.out.println("Loaded " + edges.size() + " flow edges from file");
-
-            // Print first edge as example
-            if (!edges.isEmpty()) {
-                System.out.println("Example edge: " + edges.get(0));
-            }
         } catch (IOException e) {
             e.printStackTrace();
         }

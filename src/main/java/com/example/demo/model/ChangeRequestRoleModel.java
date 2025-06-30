@@ -24,5 +24,5 @@ public class ChangeRequestRoleModel extends BaseModel {
     private List<ChangeRequestRoleUserModel> cabUserGroups;
 
     // moi
-    private List<ChangeRequestRoleUserWorkflowListModel> workflowUsers;
+    private List<ChangeRequestRoleUserWorkflowListModel> workflows;
 }

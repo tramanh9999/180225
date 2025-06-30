@@ -64,6 +64,10 @@ public interface ChangeRequestService {
                                                  FlowEdgeModel transitionDetails,
                                                  Map<String, FlowEdgeModel> indexedEdges);
 
+    void handleStopTransitionAndUpdateChange(Long changeRequestId,
+                                             ChangeRequestEntity changeRequest,
+                                             FlowEdgeModel transitionDetails);
+
     void handleCreateApprovalRequests(Long changeRequestId, Long changeTemplateId);
 
     List<ChangeRequestApprovalModel> createApprovalRequestByChangeRoles(

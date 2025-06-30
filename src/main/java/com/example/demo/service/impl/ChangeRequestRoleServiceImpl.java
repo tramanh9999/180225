@@ -241,7 +241,7 @@ public class ChangeRequestRoleServiceImpl implements ChangeRequestRoleService {
         for (ChangeRequestRoleModel item : items) {
             List<ChangeRequestRoleUserModel> cabUsers = item.getCabUserGroups();
             if (cabUsers == null || cabUsers.isEmpty()) {
-                item.setWorkflowUsers(Collections.emptyList());
+                item.setWorkflows(Collections.emptyList());
                 continue;
             }
 
@@ -288,10 +288,10 @@ public class ChangeRequestRoleServiceImpl implements ChangeRequestRoleService {
                                 mapWorkflows.getOrDefault(workflowEntry.getKey(),
                                         ChangeRequestWorkflowModel.builder()
                                                 .name("Not found workflow" + workflowEntry.getKey())
-                                                .build()).getName()).workflows(cabUserListModels)
+                                                .build()).getName()).groups(cabUserListModels)
                         .build());
             }
-            item.setWorkflowUsers(workflowUsersList);
+            item.setWorkflows(workflowUsersList);
         }
 
         return items;

@@ -125,6 +125,13 @@ public class ErrorCodeCommon {
     public static final ErrorCodeCommon CHANGE_REQUEST_APPROVAL_REQUEST_ID_NULL =
             new ErrorCodeCommon("CHANGE_REQUEST_APPROVAL_REQUEST_ID_NULL",
                     "Approval ID: {0} is not in any change request", HttpStatus.BAD_REQUEST);
+    public static final ErrorCodeCommon CHANGE_FLOW_CURRENT_EDGE_REQUIRED =
+            new ErrorCodeCommon("CHANGE_FLOW_CURRENT_EDGE_REQUIRED",
+                    "Current edge in change flow must not be null or empty",
+                    HttpStatus.BAD_REQUEST);
+    public static final ErrorCodeCommon CHANGE_REQUEST_REQUIRED =
+            new ErrorCodeCommon("CHANGE_REQUEST_REQUIRED",
+                    "Change request must not be null or empty", HttpStatus.BAD_REQUEST);
 
 
     private final String code;

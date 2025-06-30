@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.regex.Matcher;
 
-import static com.example.demo.enums.FlowConstants.CUSTOM_NODE_HANDLE_PATTERN;
+import static com.example.demo.enums.FlowConstants.NODE_APPROVAL_HANDLE_PATTERN;
 
 /**
  * The enum Node type.
@@ -84,7 +84,7 @@ public enum NodeType {
             return UNKNOWN;
         }
 
-        Matcher matcher = CUSTOM_NODE_HANDLE_PATTERN.matcher(nodeHandleId);
+        Matcher matcher = NODE_APPROVAL_HANDLE_PATTERN.matcher(nodeHandleId);
         if (matcher.matches()) {
             String nodeIdPart = matcher.group(1);
             return parseTypeFromNodeId(nodeIdPart);

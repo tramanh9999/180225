@@ -17,7 +17,7 @@ import static com.example.demo.enums.FlowConstants.*;
 public enum HandleType {
 
     INPUT(HANDLE_SEPARATOR + INPUT_KEYWORD), OUTPUT(HANDLE_SEPARATOR + OUTPUT_KEYWORD),
-    DEFAULT(null);
+    UNKNOWN(null);
 
     private final String suffix;
 
@@ -37,7 +37,7 @@ public enum HandleType {
      */
     public static HandleType fromHandleIdString(String handleIdString) {
         if (handleIdString == null || handleIdString.isEmpty()) {
-            return DEFAULT;
+            return UNKNOWN;
         }
 
         if (handleIdString.endsWith(OUTPUT.getSuffix())) {
@@ -47,7 +47,7 @@ public enum HandleType {
             return INPUT;
         }
 
-        return DEFAULT;
+        return UNKNOWN;
     }
 
 

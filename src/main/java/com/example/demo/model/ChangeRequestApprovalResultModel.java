@@ -3,8 +3,13 @@ package com.example.demo.model;
 import com.example.demo.enums.ApprovalResultStatus;
 import lombok.*;
 
-@Getter
-@Setter
+/**
+ * Model representing the result of a change request approval.
+ * It includes the ID, change request approval ID, approved user, status, and comment.
+ */
+
+@EqualsAndHashCode(callSuper = true)
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
