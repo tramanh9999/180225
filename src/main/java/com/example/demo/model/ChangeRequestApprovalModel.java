@@ -1,10 +1,7 @@
 package com.example.demo.model;
 
 import com.example.demo.enums.ApprovalResultStatus;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 /**
  * Model representing a change request approval.
@@ -15,9 +12,11 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class ChangeRequestApprovalModel extends BaseModel {
     private Long id;
     private Long changeRequestId;
     private Long changeRequestRoleUserId;
     private ApprovalResultStatus overallStatus;
+    private String overallUsername;
 }

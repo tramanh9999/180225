@@ -15,7 +15,7 @@ public interface ChangeStatusService {
     @Transactional(readOnly = true)
     Optional<ChangeStatusModel> getChangeStatusByName(String name);
 
-    List<ChangeStatusModel> findRemainingStatusesInSameStage(Long statusId);
+    List<ChangeStatusModel> findAllChangeStatusInSameStage(Long statusId);
 
     @Transactional(readOnly = true)
     List<ChangeStatusModel> getAllChangeStatuses();

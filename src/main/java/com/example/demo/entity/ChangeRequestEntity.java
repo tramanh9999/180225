@@ -30,6 +30,6 @@ public class ChangeRequestEntity {
     @Column(name = "CHANGE_STATUS_ID")
     private Long changeStatusId;
 
-    @Column(name = "CHANGE_FLOW_NODE_STR_ID")
-    private String changeFlowNodeStrId;
+    @Column(name = "CHANGE_FLOW_NODE_ID")
+    private Long changeFlowNodeId;
 }

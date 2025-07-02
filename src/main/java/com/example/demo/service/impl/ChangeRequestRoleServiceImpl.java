@@ -5,10 +5,7 @@ import com.example.demo.mapper.ChangeRequestRoleMapper;
 import com.example.demo.model.*;
 import com.example.demo.repository.ChangeRequestRoleRepository;
 import com.example.demo.repository.ChangeRequestService;
-import com.example.demo.service.ChangeFlowNodeService;
-import com.example.demo.service.ChangeRequestRoleService;
-import com.example.demo.service.ChangeRequestRoleUserService;
-import com.example.demo.service.ChangeRequestWorkflowService;
+import com.example.demo.service.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
@@ -50,6 +47,8 @@ public class ChangeRequestRoleServiceImpl implements ChangeRequestRoleService {
     @Lazy // This is still necessary to break the cycle
     @Autowired
     private ChangeRequestService changeRequestService;
+    @Autowired
+    private ChangeRequestApprovalService changeRequestApprovalService;
 
 
     @Transactional
@@ -231,6 +230,54 @@ public class ChangeRequestRoleServiceImpl implements ChangeRequestRoleService {
     }
 
 
+    /**
+     * Find ChangeRequestRoleModel by changeFlowNodeId and changeRequestId.
+     *
+     * @param changeRequestId  the ID of the change request
+     * @param changeTemplateId the ID of the change template
+     * @param changeFlowNodeId the ID of the change flow node
+     * @return ChangeRequestRoleModel if found, otherwise throws BusinessException
+     */
+    @Override
+    public ChangeRequestRoleModel getChangeRequestRoleByChangeFlowNodeId(Long changeRequestId,
+                                                                         Long changeTemplateId,
+                                                                         Long changeFlowNodeId) {
+
+
+        List<ChangeRequestRoleModel> roleList =
+                findAllChangeFlowNodesByChangeTemplateIdOrRequestId(changeTemplateId,
+                        changeRequestId);
+
+        ChangeRequestRoleModel changeRole = roleList.stream()
+                .filter(role -> changeFlowNodeId.equals(role.getChangeFlowNode().getId()))
+                .findFirst().orElseThrow(
+                        () -> new BusinessException(ErrorCodeCommon.CHANGE_FLOW_NODE_ID_NOT_FOUND));
+        List<ChangeRequestRoleUserModel> roleUserList =
+                changeRequestRoleUserService.findAllByChangeRequestRoleId(changeRole.getId());
+
+        List<Long> roleUserIds =
+                roleUserList.stream().map(ChangeRequestRoleUserModel::getId).toList();
+        if (roleUserIds.isEmpty()) {
+            return changeRole;
+        }
+
+        List<ChangeRequestApprovalModel> approvals =
+                changeRequestApprovalService.findByChangeRequestRoleUserIdIn(roleUserIds);
+
+        var approvalMap = approvals.stream().collect(
+                Collectors.toMap(ChangeRequestApprovalModel::getChangeRequestRoleUserId,
+                        approval -> approval, (existing, replacement) -> existing));
+
+        // set value of ChangeRequestRoleUserModel.approvalModel to provided ChangeRequestApprovalModel
+        roleUserList.forEach(roleUser -> {
+            ChangeRequestApprovalModel approval = approvalMap.get(roleUser.getId());
+            if (approval != null) {
+                roleUser.setApprovalModel(approval);
+            }
+        });
+        return changeRole;
+    }
+
     @Override
     public List<ChangeRequestRoleModel> groupAndSortCabUserGroups2(
             List<ChangeRequestRoleModel> items) {
@@ -296,6 +343,4 @@ public class ChangeRequestRoleServiceImpl implements ChangeRequestRoleService {
 
         return items;
     }
-
-
 }

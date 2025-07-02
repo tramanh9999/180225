@@ -16,7 +16,5 @@ import lombok.NoArgsConstructor;
 @Builder
 public class FlowNodeModel {
     private String id;
-    private NodeType type;
-    private FlowNodeDataModel data;
-
+    private NodeType parsedType;
 }

@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -63,41 +62,37 @@ public class ChangeStatusServiceImpl implements ChangeStatusService {
      *                           hoặc nếu Stage của nó là null.
      */
     @Override
-    public List<ChangeStatusModel> findRemainingStatusesInSameStage(Long statusId) {
-        // 1. Validate input statusId
+    public List<ChangeStatusModel> findAllChangeStatusInSameStage(Long statusId) {
         if (statusId == null) {
-            throw new BusinessException(ErrorCodeCommon.CHANGE_REQUEST_NOT_FOUND,
-                    "Status ID cannot be null.");
+            throw new BusinessException(ErrorCodeCommon.CHANGE_STATUS_ID_NOT_FOUND, statusId);
+        }
+        //add logic if statusid  == CONSTANTS ChangeStatus.DRAFT=0 then return stage =
+        // SUBMISSION_PLANNING
+        // Otherwise, find the ChangeStatusEntity by statusId
+        // and retrieve all statuses in the same stage.
+        // If the statusId is null, throw an exception.
+        if (ChangeStatusModel.DRAFT.equals(statusId)) {
+            return changeStatusRepository.findByStage(ChangeStage.SUBMISSION_PLANNING).stream()
+                    .map(changeStatusMapper::toModel).collect(Collectors.toList());
         }
 
-        // 2. Tìm ChangeStatusEntity dựa trên statusId đầu vào
         Optional<ChangeStatusEntity> optionalCurrentStatus =
                 changeStatusRepository.findById(statusId);
 
         ChangeStatusEntity currentStatusEntity = optionalCurrentStatus.orElseThrow(
-                () -> new BusinessException(ErrorCodeCommon.CHANGE_STATUS_NOT_FOUND,
-                        // Cần định nghĩa mã lỗi này
-                        statusId));
+                () -> new BusinessException(ErrorCodeCommon.CHANGE_STATUS_NOT_FOUND, statusId));
 
-        // 3. Lấy ChangeStage từ ChangeStatusEntity hiện tại
         ChangeStage currentStage = currentStatusEntity.getStage();
 
 
-        // 4. Tìm tất cả các ChangeStatusEntity thuộc về Stage đó
-        // Giả định ChangeStatusRepository có phương thức để tìm theo Stage
         List<ChangeStatusEntity> allStatusesInStage =
                 changeStatusRepository.findByStage(currentStage);
 
-        // 5. Chuyển đổi sang Model và lọc ra statusId ban đầu
         if (allStatusesInStage == null || allStatusesInStage.isEmpty()) {
-            return java.util.Collections.emptyList(); // Không có status nào trong stage (ngoại trừ statusId ban đầu, hoặc không có gì cả)
+            return java.util.Collections.emptyList();
         }
 
-        return allStatusesInStage.stream()
-                // Lọc bỏ status có ID trùng với statusId đầu vào
-                .filter(status -> !Objects.equals(status.getId(), statusId))
-                // Chuyển đổi từ Entity sang Model/DTO
-                .map(changeStatusMapper::toModel) // Sử dụng hàm helper để convert
+        return allStatusesInStage.stream().map(changeStatusMapper::toModel)
                 .collect(Collectors.toList());
     }
 

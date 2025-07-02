@@ -13,8 +13,7 @@ import java.util.Optional;
 @AllArgsConstructor
 public enum ApprovalResultStatus {
     ACCEPT("Accept"), REJECT("Reject"), PENDING_APPROVAL("Pending Approval"),
-
-    UNKNOWN("Unknown Status");
+    TOBE_SENT("To Be Sent"), UNKNOWN("Unknown Status");
     private final String value;
 
     public static Optional<ApprovalResultStatus> fromValue(String text) {

@@ -11,6 +11,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChangeStatusModel {
+    public static final Long DRAFT = 0L;
     private Long id;
     private String name;
     private String description;

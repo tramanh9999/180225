@@ -20,5 +20,5 @@ public class ParsedNodeHandleModel {
     private HandleType type;
     private Long changeStatusId;
 
-    private ApprovalResultStatus customAction = ApprovalResultStatus.UNKNOWN;
+    private ApprovalResultStatus approvedAction = ApprovalResultStatus.UNKNOWN;
 }

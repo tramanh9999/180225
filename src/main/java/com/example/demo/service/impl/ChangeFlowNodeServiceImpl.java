@@ -47,4 +47,50 @@ public class ChangeFlowNodeServiceImpl implements ChangeFlowNodeService {
         return new ArrayList<>(
                 changeFlowNodeRepository.findChangeFlowNodesByTemplateId(changeTemplateId));
     }
+
+    @Override
+    public ChangeFlowNodeModel findByNodeId(String nodeId) {
+
+        // Validate input
+        if (nodeId == null || nodeId.isEmpty()) {
+            return null; // or throw an exception if preferred
+        }
+        ChangeFlowNodeEntity entity = changeFlowNodeRepository.findByNodeId(nodeId);
+        if (entity == null) {
+            return null; // or throw an exception if preferred
+        }
+        return changeFlowNodeMapper.toDto(entity);
+    }
+
+    @Override
+    public ChangeFlowNodeModel findById(Long changeFlowNodeNodeId) {
+        // Validate input
+        if (changeFlowNodeNodeId == null) {
+            return null; // or throw an exception if preferred
+        }
+        ChangeFlowNodeEntity entity =
+                changeFlowNodeRepository.findById(changeFlowNodeNodeId).orElse(null);
+        if (entity == null) {
+            return null; // or throw an exception if preferred
+        }
+        return changeFlowNodeMapper.toDto(entity);
+    }
+
+    @Override
+    public List<ChangeFlowNodeModel> findByChangeFlowId(Long changeFlowId) {
+
+        // Validate input
+        if (changeFlowId == null) {
+            return List.of(); // or throw an exception if preferred
+        }
+
+        List<ChangeFlowNodeEntity> entities =
+                changeFlowNodeRepository.findByChangeFlowId(changeFlowId);
+        if (entities == null || entities.isEmpty()) {
+            return List.of(); // or throw an exception if preferred
+        }
+
+        return changeFlowNodeMapper.toDtoList(entities);
+
+    }
 }

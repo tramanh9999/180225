@@ -3,34 +3,34 @@ package com.example.demo.service.impl;
 import com.example.demo.entity.ChangeRequestApprovalEntity;
 import com.example.demo.mapper.ChangeRequestApprovalMapper;
 import com.example.demo.model.ChangeRequestApprovalModel;
+import com.example.demo.model.ChangeRequestRoleModel;
 import com.example.demo.repository.ChangeRequestApprovalRepository;
+import com.example.demo.service.ChangeRequestApprovalResultService;
 import com.example.demo.service.ChangeRequestApprovalService;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
 public class ChangeRequestApprovalServiceImpl implements ChangeRequestApprovalService {
 
     @Autowired
+    ChangeRequestApprovalResultService approvalResultService;
+    @Autowired
     private ChangeRequestApprovalRepository approvalRepository;
-
     @Autowired
     private ChangeRequestApprovalMapper approvalMapper;
 
     @Override
     public ChangeRequestApprovalModel findById(Long id) {
-        return approvalRepository.findById(id).map(this::convertToDto).orElse(null);
+        return approvalRepository.findById(id).map(approvalMapper::toModel).orElse(null);
     }
 
     @Override
     public List<ChangeRequestApprovalModel> findAll() {
-        return approvalRepository.findAll().stream().map(this::convertToDto)
+        return approvalRepository.findAll().stream().map(approvalMapper::toModel)
                 .collect(Collectors.toList());
     }
 
@@ -50,12 +50,12 @@ public class ChangeRequestApprovalServiceImpl implements ChangeRequestApprovalSe
     @Override
     public List<ChangeRequestApprovalModel> findByChangeRequestId(Long changeRequestId) {
         return approvalRepository.findByChangeRequestId(changeRequestId).stream()
-                .map(this::convertToDto).collect(Collectors.toList());
+                .map(approvalMapper::toModel).collect(Collectors.toList());
     }
 
     @Override
     public List<ChangeRequestApprovalModel> findByOverallStatus(String status) {
-        return approvalRepository.findByOverallStatus(status).stream().map(this::convertToDto)
+        return approvalRepository.findByOverallStatus(status).stream().map(approvalMapper::toModel)
                 .collect(Collectors.toList());
     }
 
@@ -63,18 +63,27 @@ public class ChangeRequestApprovalServiceImpl implements ChangeRequestApprovalSe
     public List<ChangeRequestApprovalModel> findByChangeRequestIdAndOverallStatus(
             Long changeRequestId, String status) {
         return approvalRepository.findByChangeRequestIdAndOverallStatus(changeRequestId, status)
-                .stream().map(this::convertToDto).collect(Collectors.toList());
+                .stream().map(approvalMapper::toModel).collect(Collectors.toList());
     }
 
-    private ChangeRequestApprovalModel convertToDto(ChangeRequestApprovalEntity approval) {
-        ChangeRequestApprovalModel approvalDto = new ChangeRequestApprovalModel();
-        BeanUtils.copyProperties(approval, approvalDto);
-        return approvalDto;
+    @Override
+    public ChangeRequestRoleModel findByChangeFlowIdAndNodeId(Long changeRequestId,
+                                                              Long changeFlowId,
+                                                              String changeFlowNodeStrId) {
+        return null;
     }
 
-    private ChangeRequestApprovalEntity convertToEntity(ChangeRequestApprovalModel approvalDto) {
-        ChangeRequestApprovalEntity approval = new ChangeRequestApprovalEntity();
-        BeanUtils.copyProperties(approvalDto, approval);
-        return approval;
+    @Override
+    public List<ChangeRequestApprovalModel> findByChangeRequestRoleUserIdIn(
+            List<Long> roleUserIds) {
+        return approvalRepository.findByChangeRequestRoleUserIdIn(roleUserIds);
     }
+
+    @Override
+    public ChangeRequestApprovalModel save(ChangeRequestApprovalModel replyModel) {
+        ChangeRequestApprovalEntity savedApproval =
+                approvalRepository.save(approvalMapper.toEntity(replyModel));
+        return approvalMapper.toModel(savedApproval);
+    }
+
 }

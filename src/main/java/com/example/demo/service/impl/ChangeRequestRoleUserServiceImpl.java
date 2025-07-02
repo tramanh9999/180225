@@ -87,4 +87,10 @@ public class ChangeRequestRoleUserServiceImpl implements ChangeRequestRoleUserSe
             throw new BusinessException(ErrorCodeCommon.USERNAME_NOT_FOUND, nonExistentUsernames);
         }
     }
+
+    @Override
+    public List<ChangeRequestRoleUserModel> findAllByChangeRequestRoleId(Long changeRequestRoleId) {
+        return changeRequestRoleUserRepository.findAllByChangeRequestRoleId(changeRequestRoleId)
+                .stream().map(changeRequestRoleUserMapper::toDto).collect(Collectors.toList());
+    }
 }

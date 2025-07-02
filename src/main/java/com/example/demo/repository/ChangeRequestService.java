@@ -5,7 +5,6 @@ import com.example.demo.model.*;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Service interface for ChangeRequestModel.
@@ -29,19 +28,18 @@ public interface ChangeRequestService {
      * @return the change request approval result model
      */
     @Transactional
-    ChangeRequestApprovalResultModel processApprovalReply(
-            ChangeRequestApprovalResultModel replyModel);
+    ChangeRequestModel processApprovalReply(ChangeRequestApprovalResultModel replyModel);
 
 
     /**
      * Validate and prepare transition details flow transition details.
      *
-     * @param changeRequestId    the change request id
-     * @param nextChangeStatusId the next change status id
+     * @param changeRequestId        the change request id
+     * @param actionOnChangeStatusId the next change status id
      * @return the flow transition details
      */
     FlowTransitionDetail validateAndPrepareChangeCoordinatorTransition(Long changeRequestId,
-                                                                       Long nextChangeStatusId);
+                                                                       ChangeProcessModel actionOnChangeStatusId);
 
     /**
      * Process change request coordinator transition change request model.
@@ -56,20 +54,15 @@ public interface ChangeRequestService {
      */
     @Transactional
     ChangeRequestModel processChangeRequestCoordinatorTransition(Long changeRequestId,
-                                                                 Long changeStatusId);
-
+                                                                 ChangeProcessModel changeStatusId);
 
     @Transactional
     void recursiveProcessChangeRequestTransition(ChangeRequestEntity changeRequest,
-                                                 FlowEdgeModel transitionDetails,
-                                                 Map<String, FlowEdgeModel> indexedEdges);
+                                                 FlowEdgeModel edgeModel,
+                                                 IndexedChangeFlowDataModel flowData);
 
-    void handleStopTransitionAndUpdateChange(Long changeRequestId,
-                                             ChangeRequestEntity changeRequest,
-                                             FlowEdgeModel transitionDetails);
 
-    void handleCreateApprovalRequests(Long changeRequestId, Long changeTemplateId);
+    void handleCreateApprovalRequests(Long changeRequestId, Long changeTemplateId,
+                                      List<ChangeRequestRoleUserModel> remainTobeCreateApprovalRequestForRoleUser);
 
-    List<ChangeRequestApprovalModel> createApprovalRequestByChangeRoles(
-            List<ChangeRequestRoleModel> changeRequestRoles);
 }

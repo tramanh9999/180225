@@ -30,4 +30,10 @@ public interface ChangeFlowNodeService {
     Page<String> findPagingUsernameById(Long id, PagingRequestModel pagingRequestModel);
 
     List<ChangeFlowNodeModel> findChangeFlowNodesByTemplateId(Long changeTemplateId);
+
+    ChangeFlowNodeModel findByNodeId(String nodeId);
+
+    ChangeFlowNodeModel findById(Long changeFlowNodeNodeId);
+
+    List<ChangeFlowNodeModel> findByChangeFlowId(Long changeFlowId);
 }

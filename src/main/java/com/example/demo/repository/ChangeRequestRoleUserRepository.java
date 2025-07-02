@@ -21,4 +21,12 @@ public interface ChangeRequestRoleUserRepository
      * @param changeRequestId the change request id
      */
     void deleteAllByChangeRequestId(Long changeRequestId);
+
+    /**
+     * Find all by change request role id.
+     *
+     * @param changeRequestRoleId the change request role id
+     * @return the list of ChangeRequestRoleUserEntity
+     */
+    List<ChangeRequestRoleUserEntity> findAllByChangeRequestRoleId(Long changeRequestRoleId);
 }

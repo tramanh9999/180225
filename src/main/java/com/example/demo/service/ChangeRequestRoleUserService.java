@@ -53,4 +53,6 @@ public interface ChangeRequestRoleUserService {
      * @throws BusinessException if validation fails
      */
     void validateList(List<ChangeRequestRoleUserModel> list);
+
+    List<ChangeRequestRoleUserModel> findAllByChangeRequestRoleId(Long changeRequestRoleId);
 }

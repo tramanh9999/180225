@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.HashMap;
 import java.util.Map;
 
 
@@ -15,11 +16,14 @@ import java.util.Map;
 @NoArgsConstructor
 @Builder
 public class IndexedChangeFlowDataModel {
-    private Map<String, FlowEdgeModel> indexedEdges;
-    private Map<String, FlowNodeModel> indexedNodes;
+    @Builder.Default
+    private Map<String, FlowEdgeModel> indexedEdges = new HashMap<>();
+    @Builder.Default
+    private Map<String, ChangeFlowNodeModel> indexedNodes = new HashMap<>();
+    ;
 
     public IndexedChangeFlowDataModel(Map<String, FlowEdgeModel> indexedEdges,
-                                      Map<String, FlowNodeModel> indexedNodes) {
+                                      Map<String, ChangeFlowNodeModel> indexedNodes) {
         this.indexedEdges = indexedEdges;
         this.indexedNodes = indexedNodes;
     }

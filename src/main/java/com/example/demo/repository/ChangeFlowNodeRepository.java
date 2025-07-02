@@ -19,4 +19,8 @@ public interface ChangeFlowNodeRepository
      * @return the list of ChangeFlowNodeEntity with the given IDs
      */
     List<ChangeFlowNodeEntity> findByIdIn(List<Long> ids);
+
+    ChangeFlowNodeEntity findByNodeId(String nodeId);
+
+    List<ChangeFlowNodeEntity> findByChangeFlowId(Long changeFlowId);
 }

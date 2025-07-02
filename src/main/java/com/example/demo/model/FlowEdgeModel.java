@@ -4,12 +4,14 @@ import com.example.demo.enums.ApprovalResultStatus;
 import com.example.demo.enums.FlowConstants;
 import com.example.demo.enums.HandleType;
 import com.example.demo.enums.NodeType;
+import com.example.demo.mapper.ChangeFlowNodeMapper;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Map;
 import java.util.regex.Matcher;
 
 import static com.example.demo.enums.FlowConstants.*;
@@ -25,20 +27,21 @@ import static com.example.demo.enums.FlowConstants.*;
 @Slf4j
 public class FlowEdgeModel {
 
+    static ChangeFlowNodeMapper mapper;
+    @Builder.Default
+    ChangeFlowNodeModel sourceNodeModel = new ChangeFlowNodeModel();
+    @Builder.Default
+    ChangeFlowNodeModel targetNodeModel = new ChangeFlowNodeModel();
     private String id;
-    private String sourceNodeId;
-    private String targetNodeId;
-    private ParsedNodeHandleModel sourceHandle;
-    private ParsedNodeHandleModel targetHandle;
-
-    private FlowNodeModel sourceNode;
-    private FlowNodeModel targetNode;
-
     private Long changeFlowId;
     private ApprovalResultStatus resultStatus;
 
+    public static ParsedNodeHandleModel parseHandleString(String handleString, NodeType nodeType) {
 
-    public static ParsedNodeHandleModel parseHandleString(String handleString) {
+
+        if (NodeType.START.equals(nodeType)) {
+            handleString = FlowConstants.START_NODE_SOURCE_HANDLE_ID;
+        }
         if (handleString == null || handleString.isEmpty()) {
             return new ParsedNodeHandleModel(null, null, null, null, ApprovalResultStatus.UNKNOWN);
         }
@@ -63,8 +66,9 @@ public class FlowEdgeModel {
             String nodeIdPart =
                     customApprovalMatcher.group(NODE_APPROVAL_HANDLE_PATTERN__NODE_ID_INDEX);
             parsedHandle.setNodeId(nodeIdPart);
-            parsedHandle.setCustomAction(ApprovalResultStatus.fromValue(customApprovalMatcher.group(
-                            NODE_APPROVAL_HANDLE_PATTERN__NODE_APPROVAL_ACTION_INDEX))
+            parsedHandle.setApprovedAction(ApprovalResultStatus.fromValue(
+                            customApprovalMatcher.group(
+                                    NODE_APPROVAL_HANDLE_PATTERN__NODE_APPROVAL_ACTION_INDEX))
                     .orElse(ApprovalResultStatus.UNKNOWN));
         } else if (nodeMatcher.matches()) {
             String nodeIdPart = nodeMatcher.group(NODE_ID_HANDLE_PATTERN__NODE_ID_INDEX);
@@ -85,20 +89,28 @@ public class FlowEdgeModel {
      * Converts a simple FlowEdgeRawModel to a FlowEdgeModel.
      * This method is used to convert raw edge data into a model that includes parsed handles.
      *
-     * @param simpleEdge the raw edge data to convert
+     * @param rawEdge the raw edge data to convert
      * @return a FlowEdgeModel with parsed handles
      */
-    public static FlowEdgeModel fromSimpleFlowEdge(FlowEdgeRawModel simpleEdge) {
+    public static FlowEdgeModel fromSimpleFlowEdge(FlowEdgeRawModel rawEdge,
+                                                   Map<String, ChangeFlowNodeModel> indexedNodes) {
         FlowEdgeModel model = new FlowEdgeModel();
-        model.setId(simpleEdge.getId());
-        model.setSourceNodeId(simpleEdge.getSource());
-        model.setTargetNodeId(simpleEdge.getTarget());
-        model.setSourceHandle(parseHandleString(simpleEdge.getSourceHandle()));
-        model.setTargetHandle(parseHandleString(simpleEdge.getTargetHandle()));
-        model.setSourceNode(FlowNodeModel.builder().id(simpleEdge.getSource())
-                .type(NodeType.parseTypeFromNodeId(simpleEdge.getSource())).build());
-        model.setTargetNode(FlowNodeModel.builder().id(simpleEdge.getTarget())
-                .type(NodeType.parseTypeFromNodeId(model.getTargetNodeId())).build());
+        model.setId(rawEdge.getId());
+        model.setSourceNodeModel(mapper.cloneModel(
+                indexedNodes.getOrDefault(rawEdge.getSource(), new ChangeFlowNodeModel())));
+        ChangeFlowNodeModel sourceNode = model.getSourceNodeModel();
+        sourceNode.setParsedType(NodeType.parseTypeFromNodeId(rawEdge.getSource()));
+        sourceNode.setParsedHandle(
+                parseHandleString(rawEdge.getSourceHandle(), sourceNode.getParsedType()));
+
+        model.setTargetNodeModel(indexedNodes.get(rawEdge.getTarget()));
+        // check if the target node found then set parsed type = NodeType.parseTypeFromNodeId(rawEdge.getTarget())
+        ChangeFlowNodeModel targetNode = mapper.cloneModel(model.getTargetNodeModel());
+        if (targetNode != null) {
+            targetNode.setParsedType(NodeType.parseTypeFromNodeId(rawEdge.getTarget()));
+            targetNode.setParsedHandle(
+                    parseHandleString(rawEdge.getTargetHandle(), targetNode.getParsedType()));
+        }
 
         return model;
     }

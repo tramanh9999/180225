@@ -1,7 +1,10 @@
 package com.example.demo.service.impl;
 
 import com.example.demo.entity.ChangeRequestEntity;
-import com.example.demo.enums.*;
+import com.example.demo.enums.ApprovalResultStatus;
+import com.example.demo.enums.FlowConstants;
+import com.example.demo.enums.NodeCommonType;
+import com.example.demo.enums.NodeType;
 import com.example.demo.mapper.ChangeRequestMapper;
 import com.example.demo.model.*;
 import com.example.demo.repository.ChangeRequestRepository;
@@ -12,11 +15,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
+
+import static com.example.demo.model.ChangeFlowDataParser.createEdgeMapKey;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +33,8 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
     private final ChangeRequestRoleService changeRequestRoleService;
     private final ChangeRequestHistoryService changeRequestHistoryService;
     private final ChangeStatusService changeStatusService;
-    private final ChangeFlowService changeFlowService;
+    private final MailService mailService;
+    private final ChangeRequestApprovalResultService changeRequestApprovalResultService;
 
     @Override
     public ChangeRequestModel findById(Long changeRequestId) throws BusinessException {
@@ -45,20 +49,37 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
     }
 
 
+    String getUserName() {
+        return "kanban_system";
+
+    }
+
     @Transactional
     @Override
-    public ChangeRequestApprovalResultModel processApprovalReply(
-            ChangeRequestApprovalResultModel replyModel) {
-        var flowTransitionDetails = validateAndPrepareApprovalReplyTransition(replyModel);
-        var flowData = flowManagementService.getFlowDataByChangeFlowId(
-                flowTransitionDetails.getChangeFlowId());
-        var indexedEdges = flowData.getIndexedEdges();
-        var transitionDetails = flowManagementService.getOrDefaultEdgeByNodeHandleId(
-                flowTransitionDetails.getChangeFlowId(),
-                flowTransitionDetails.getCurrentChangeFlowNodeHandleId(), indexedEdges);
-        recursiveProcessChangeRequestTransition(flowTransitionDetails.getChangeRequest(),
-                transitionDetails, indexedEdges);
-        return replyModel;
+    public ChangeRequestModel processApprovalReply(ChangeRequestApprovalResultModel replyModel) {
+        var approvalData = validateAndPrepareApprovalReplyTransition(replyModel);
+
+        var currentChangeFlowEdge = flowManagementService.getOrDefaultEdgeByNodeHandleId(
+                approvalData.getCurrentChangeFlowNodeHandleId(), approvalData.getFlowData());
+        //update change request approval entity with replyModel
+        //throw  business exception if not found change request approval entity
+
+        var changeRequestApproval = approvalData.getChangeRequestApproval();
+        changeRequestApproval.setOverallStatus(replyModel.getStatus());
+        changeRequestApproval.setOverallUsername(replyModel.getApprovedUser());
+
+
+        changeRequestApprovalService.save(changeRequestApproval);
+
+        ChangeRequestApprovalResultModel resultModel = ChangeRequestApprovalResultModel.builder()
+                .changeRequestApprovalId(replyModel.getChangeRequestApprovalId())
+                .approvedUser(changeRequestApproval.getOverallUsername())
+                .comment(replyModel.getComment()).status(replyModel.getStatus()).build();
+        changeRequestApprovalResultService.createResult(resultModel);
+
+        recursiveProcessChangeRequestTransition(approvalData.getChangeRequest(),
+                currentChangeFlowEdge, approvalData.getFlowData());
+        return changeRequestMapper.toDto(approvalData.getChangeRequest());
     }
 
     private FlowTransitionDetail validateAndPrepareApprovalReplyTransition(
@@ -81,6 +102,7 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
                     approvalId);
         }
 
+
         var changeRequestId = approvalModel.getChangeRequestId();
         var cr = changeRequestRepository.findById(changeRequestId).orElseThrow(
                 () -> new BusinessException(ErrorCodeCommon.CHANGE_REQUEST_ID_NOT_FOUND,
@@ -101,21 +123,43 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
                     changeTemplateId);
         }
 
-        changeFlowService.findById(changeFlowId).orElseThrow(
-                () -> new BusinessException(ErrorCodeCommon.CHANGE_FLOW_NOT_FOUND, changeFlowId));
+        var indexedChangeFlowData = flowManagementService.getFlowDataByChangeFlowId(changeFlowId);
+
+
+
+        /*
+         1. Reply with valid role : change request in a change flow node id  = node of change role
+        that contain current change approval request id in
+         2. Not allow to reply other user's approval request: Config role user is current user
+         3. Not allow to reply a approval request which STATUS != REJECTED/ PENDING
+         */
+
 
         String currentNodeHandleId =
-                flowManagementService.createApprovalNodeHandleIdFromNodeIdAndStatus(
-                        cr.getChangeFlowNodeStrId(), replyModel.getStatus());
+                flowManagementService.buildHandleOutputIdForApprovalAction(cr.getChangeFlowNodeId(),
+                        replyModel.getStatus());
 
+        if (!indexedChangeFlowData.getIndexedEdges()
+                .containsKey(createEdgeMapKey(currentNodeHandleId))) {
+            throw new BusinessException(ErrorCodeCommon.FLOW_TRANSITION_NOT_FOUND,
+                    currentNodeHandleId, changeFlowId);
+        }
+        // get current role of logged user.
+        var changeRole =
+                changeRequestRoleService.getChangeRequestRoleByChangeFlowNodeId(changeFlowId,
+                        changeRequestId, cr.getChangeFlowNodeId());
         return FlowTransitionDetail.builder().changeRequest(cr).changeFlowId(changeFlowId)
-                .currentChangeFlowNodeHandleId(currentNodeHandleId).build();
+                .currentChangeFlowNodeHandleId(currentNodeHandleId).changeRole(changeRole)
+                .changeRequestApproval(approvalModel).flowData(indexedChangeFlowData).build();
     }
 
 
     @Override
     public FlowTransitionDetail validateAndPrepareChangeCoordinatorTransition(Long changeRequestId,
-                                                                              Long nextChangeStatusId) {
+                                                                              ChangeProcessModel changeProcessModel) {
+
+
+        long actionOnChangeStatusId = changeProcessModel.getChangeStatusId();
         if (changeRequestId == null) {
             throw new BusinessException(ErrorCodeCommon.CHANGE_REQUEST_ID_REQUIRED);
         }
@@ -139,51 +183,59 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
             throw new BusinessException(ErrorCodeCommon.CHANGE_FLOW_CONFIGURATION_ERROR,
                     changeFlowId);
         }
-        Long currentChangeStatusId = cr.getChangeStatusId();
-        String currentChangeFlowNodeHandleId = FlowConstants.START_NODE_SOURCE_HANDLE_ID;
-        if (currentChangeStatusId != null) {
-            currentChangeFlowNodeHandleId = currentChangeStatusId + FlowConstants.HANDLE_SEPARATOR +
-                    FlowConstants.OUTPUT_KEYWORD;
-        }
 
-        List<ChangeStatusModel> remainingStatusesInSameStage =
-                changeStatusService.findRemainingStatusesInSameStage(currentChangeStatusId);
-        if (remainingStatusesInSameStage == null || remainingStatusesInSameStage.isEmpty()) {
+        String currentChangeFlowNodeHandleId =
+                changeProcessModel.getChangeStatusId() + FlowConstants.HANDLE_SEPARATOR +
+                        FlowConstants.OUTPUT_KEYWORD; // Append output keyword to change status ID;
+
+        List<ChangeStatusModel> allChangeStatusInSameStage =
+                changeStatusService.findAllChangeStatusInSameStage(cr.getChangeStatusId());
+        if (allChangeStatusInSameStage == null || allChangeStatusInSameStage.isEmpty()) {
             throw new BusinessException(ErrorCodeCommon.NO_VALID_NEXT_STATUSES_FOUND,
-                    currentChangeStatusId);
+                    cr.getChangeStatusId());
         }
 
-        if (nextChangeStatusId == null) {
-            throw new BusinessException(ErrorCodeCommon.INVALID_CHANGE_STATUS);
-        }
-        boolean isValidNextStatus = remainingStatusesInSameStage.stream()
-                .anyMatch(status -> Objects.equals(status.getId(), nextChangeStatusId));
-        if (!isValidNextStatus) {
-            throw new BusinessException(ErrorCodeCommon.NEXT_STATUS_NOT_IN_STAGE,
-                    nextChangeStatusId, currentChangeStatusId);
+        boolean invalidChangeStatus = allChangeStatusInSameStage.stream()
+                .anyMatch(status -> Objects.equals(status.getId(), actionOnChangeStatusId));
+        if (!invalidChangeStatus) {
+            throw new BusinessException(ErrorCodeCommon.CHANGE_REQUEST_INVALID_UPDATE_STATUS,
+                    actionOnChangeStatusId, changeProcessModel.getChangeStatusName(),
+                    allChangeStatusInSameStage.get(0).getStage());
         }
 
+        var indexedChangeFlowData = flowManagementService.getFlowDataByChangeFlowId(changeFlowId);
+        if (!indexedChangeFlowData.getIndexedEdges()
+                .containsKey(createEdgeMapKey(currentChangeFlowNodeHandleId))) {
+            throw new BusinessException(ErrorCodeCommon.FLOW_TRANSITION_NOT_FOUND,
+                    currentChangeFlowNodeHandleId, changeFlowId);
+        }
         return FlowTransitionDetail.builder().changeFlowId(changeFlowId).changeRequest(cr)
-                .currentChangeFlowNodeHandleId(currentChangeFlowNodeHandleId).build();
+                .currentChangeFlowNodeHandleId(currentChangeFlowNodeHandleId)
+                .flowData(indexedChangeFlowData).build();
     }
 
 
     @Transactional
     @Override
     public ChangeRequestModel processChangeRequestCoordinatorTransition(Long changeRequestId,
-                                                                        Long nextChangeStatusId) {
+                                                                        ChangeProcessModel changeProcessModel) {
+        var changeRequestData =
+                validateAndPrepareChangeCoordinatorTransition(changeRequestId, changeProcessModel);
 
-        var details =
-                validateAndPrepareChangeCoordinatorTransition(changeRequestId, nextChangeStatusId);
-        IndexedChangeFlowDataModel flowData =
-                flowManagementService.getFlowDataByChangeFlowId(details.getChangeFlowId());
-        Map<String, FlowEdgeModel> indexedEdges = flowData.getIndexedEdges();
-        FlowEdgeModel transitionDetails =
-                flowManagementService.getOrDefaultEdgeByNodeHandleId(details.getChangeFlowId(),
-                        details.getCurrentChangeFlowNodeHandleId(), indexedEdges);
-        recursiveProcessChangeRequestTransition(details.getChangeRequest(), transitionDetails,
-                indexedEdges);
-        return changeRequestMapper.toDto(details.getChangeRequest());
+        var currentChangeFlowEdge = flowManagementService.getOrDefaultEdgeByNodeHandleId(
+                changeRequestData.getCurrentChangeFlowNodeHandleId(),
+                changeRequestData.getFlowData());
+
+        if (currentChangeFlowEdge.getTargetNodeModel() == null ||
+                currentChangeFlowEdge.getTargetNodeModel().getParsedType() == NodeType.END) {
+            // If the next node is not confined in change flow / is END node, then stop processing
+            return changeRequestMapper.toDto(changeRequestData.getChangeRequest());
+        }
+
+
+        recursiveProcessChangeRequestTransition(changeRequestData.getChangeRequest(),
+                currentChangeFlowEdge, changeRequestData.getFlowData());
+        return changeRequestMapper.toDto(changeRequestData.getChangeRequest());
     }
 
 
@@ -200,77 +252,144 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
     @Override
     public void recursiveProcessChangeRequestTransition(ChangeRequestEntity changeRequest,
                                                         FlowEdgeModel edgeModel,
-                                                        Map<String, FlowEdgeModel> indexedEdges) {
-
-        if (changeRequest == null) {
-            throw new BusinessException(ErrorCodeCommon.CHANGE_REQUEST_REQUIRED);
-        }
-        if (edgeModel == null) {
-            throw new BusinessException(ErrorCodeCommon.CHANGE_FLOW_CURRENT_EDGE_REQUIRED);
-        }
-
-        if (indexedEdges == null || indexedEdges.isEmpty()) {
-            return;
-        }
-
+                                                        IndexedChangeFlowDataModel flowData) {
         Long changeRequestId = changeRequest.getId();
-        FlowNodeModel targetNode = edgeModel.getTargetNode();
-        if (targetNode == null || NodeType.END == targetNode.getType()) {
-            handleStopTransitionAndUpdateChange(changeRequestId, changeRequest, edgeModel);
+        var nextNode = edgeModel.getTargetNodeModel();
+        var currentNode = edgeModel.getSourceNodeModel();
+        if (!shouldMoveChangeRequestByCheckingEdge(edgeModel)) {
             return;
         }
-        String nextNodeId = targetNode.getId();
-        NodeType nextNodeType = targetNode.getType();
-        String currentHandleId = edgeModel.getSourceHandle().getRawHandleId();
+
+        Long nextNodeId = nextNode.getId();
+        NodeType nextNodeType = nextNode.getParsedType();
 
         if (nextNodeType.getCommonType() == NodeCommonType.CHANGE_STAGE) {
-            // Case: Next node is a "stage node"
-            Long newStatusId = edgeModel.getTargetHandle().getChangeStatusId();
+            // Case: Next node is a "stage node" , it always connected to a change status
+            var newStatusId = edgeModel.getTargetNodeModel().getParsedHandle().getChangeStatusId();
 
-            if (newStatusId != null) {
-                ChangeRequestHistoryModel historyModel =
-                        ChangeRequestHistoryModel.builder().changeRequestId(changeRequestId)
-                                .oldChangeStatusId(changeRequest.getChangeStatusId())
-                                .newChangeStatusId(newStatusId) // Get updated status ID after
-                                .oldChangeFlowNodeHandleId(changeRequest.getChangeFlowNodeStrId())
-                                .newChangeFlowNodeHandleId(edgeModel.getTargetNodeId())
-                                .actionTaken(edgeModel.getSourceHandle().getCustomAction()).build();
+            var approvedAction = currentNode.getParsedHandle().getApprovedAction();
 
-                changeRequestHistoryService.createHistoryRecord(historyModel);
-
-                String nextHandleId = newStatusId + FlowConstants.HANDLE_SEPARATOR +
-                        FlowConstants.OUTPUT_KEYWORD; // Append output keyword to new status ID
-
-
-                FlowEdgeModel nextStepTransitionDetails =
-                        flowManagementService.getOrDefaultEdgeByNodeHandleId(
-                                edgeModel.getChangeFlowId(), nextHandleId, indexedEdges);
-
-
-                recursiveProcessChangeRequestTransition(changeRequest, nextStepTransitionDetails,
-                        indexedEdges);
-            } else {
-                log.warn(String.format(
-                        "Warning: Next node %s is a stage node, but no new status ID was provided in transition details for Change Request %d. Status not updated.",
-                        nextNodeId, changeRequestId));
-            }
-        } else if (nextNodeType.getCommonType() == NodeCommonType.CHANGE_ROLE) {
-
-            ChangeRequestHistoryModel historyModel =
-                    ChangeRequestHistoryModel.builder().changeRequestId(changeRequestId)
-                            .oldChangeStatusId(changeRequest.getChangeStatusId())
-                            .newChangeStatusId(edgeModel.getTargetHandle().getChangeStatusId())
-                            .oldChangeFlowNodeHandleId(changeRequest.getChangeFlowNodeStrId())
-                            .newChangeFlowNodeHandleId(edgeModel.getTargetNodeId())
-                            .actionTaken(edgeModel.getSourceHandle().getCustomAction()).build();
+            var historyModel = ChangeRequestHistoryModel.builder().changeRequestId(changeRequestId)
+                    .oldChangeStatusId(changeRequest.getChangeStatusId())
+                    .newChangeStatusId(newStatusId).oldChangeFlowNodeId(currentNode.getId())
+                    .newChangeFlowNodeId(nextNode.getId()).actionTaken(approvedAction).build();
             changeRequestHistoryService.createHistoryRecord(historyModel);
 
-            changeRequest.setChangeFlowNodeStrId(currentHandleId);
+            changeRequest.setChangeStatusId(newStatusId);
+            changeRequest.setChangeFlowNodeId(currentNode.getId());
             changeRequestRepository.save(changeRequest);
 
-            // how to know if role is approval or not?
+            //auto process next node handle id if ok
+            var nextNodeHandleOutputId = newStatusId + FlowConstants.HANDLE_SEPARATOR +
+                    FlowConstants.OUTPUT_KEYWORD; // Append output keyword to new status ID
+            var nextNodeHandleOutputEdge =
+                    flowManagementService.getOrDefaultEdgeByNodeHandleId(nextNodeHandleOutputId,
+                            flowData);
+            recursiveProcessChangeRequestTransition(changeRequest, nextNodeHandleOutputEdge,
+                    flowData);
+        } else if (nextNodeType.getCommonType() == NodeCommonType.CHANGE_ROLE) {
 
-            handleCreateApprovalRequests(changeRequestId, changeRequest.getChangeTemplateId());
+            var nextChangeRole = changeRequestRoleService.getChangeRequestRoleByChangeFlowNodeId(
+                    changeRequest.getId(), changeRequest.getChangeTemplateId(),
+                    edgeModel.getTargetNodeModel().getId());
+
+
+            //find at least one approvalModel in nextChangeRole is not ACCEPTED
+
+
+            //
+            List<ChangeRequestApprovalModel> allApprovals = nextChangeRole.getWorkflows().stream()
+                    .flatMap(workflow -> workflow.getGroups().stream())
+                    .flatMap(group -> group.getUsers().stream())
+                    .map(ChangeRequestRoleUserModel::getApprovalModel).toList();
+            boolean roleUserNotAcceptedAtAllOrNotCreatedApproval = allApprovals.stream().anyMatch(
+                    approval -> approval == null ||
+                            approval.getOverallStatus() != ApprovalResultStatus.ACCEPT);
+
+
+            if (roleUserNotAcceptedAtAllOrNotCreatedApproval) {
+                for (ChangeRequestRoleUserWorkflowListModel workflow : nextChangeRole.getWorkflows()) {
+                    //flat the users in workflow
+                    // and process each group in the workflow
+                    List<ChangeRequestRoleUserModel> oneWorkflowUsers =
+                            workflow.getGroups().stream()
+                                    .flatMap(group -> group.getUsers().stream()).toList();
+
+                    // filter oneWorkflowUsers that has min cabGroup and min cabGroupOrder in a cab group and
+                    // approvalModel is null or has status is not ACCEPTED
+                    List<ChangeRequestRoleUserModel> filteredUsers = oneWorkflowUsers.stream()
+                            .filter(user -> user.getApprovalModel() == null ||
+                                    user.getApprovalModel().getOverallStatus() !=
+                                            ApprovalResultStatus.ACCEPT)
+                            .sorted(Comparator.comparing(ChangeRequestRoleUserModel::getCabGroup)
+                                    .thenComparing(ChangeRequestRoleUserModel::getCabGroupOrder))
+                            .toList();
+
+                    List<ChangeRequestRoleUserModel> tobeCreateApprovalRequestUsers =
+                            filteredUsers.stream().filter(user -> user.getApprovalModel() == null)
+                                    .toList();
+
+                    //resend mail to users that has approvalModel is not null and status is REJECTED
+                    List<ChangeRequestRoleUserModel> usersToResendMail = filteredUsers.stream()
+                            .filter(user -> user.getApprovalModel() != null &&
+                                    user.getApprovalModel().getOverallStatus() ==
+                                            ApprovalResultStatus.REJECT).toList();
+
+                    if (!usersToResendMail.isEmpty()) {
+                        mailService.sendBulkEmail(usersToResendMail, null,
+                                "Your approval request has been rejected. Please review and take action.");
+                    }
+
+
+                    handleCreateApprovalRequests(changeRequestId,
+                            changeRequest.getChangeTemplateId(), tobeCreateApprovalRequestUsers);
+
+
+                    ChangeRequestHistoryModel historyModel =
+                            ChangeRequestHistoryModel.builder().changeRequestId(changeRequestId)
+                                    .oldChangeFlowNodeId(currentNode.getId())
+                                    .newChangeFlowNodeId(nextNode.getId()).actionTaken(null)
+                                    .build();
+                    if (currentNode.getParsedType().getCommonType() ==
+                            NodeCommonType.CHANGE_STAGE) {
+                        Long nextChangeStatusId = nextNode.getParsedHandle().getChangeStatusId();
+                        historyModel.setOldChangeStatusId(changeRequest.getChangeStatusId());
+                        historyModel.setNewChangeStatusId(nextChangeStatusId);
+
+                        changeRequest.setChangeStatusId(nextChangeStatusId);
+                    }
+                    changeRequest.setChangeFlowNodeId(nextNode.getId());
+                    changeRequestRepository.save(changeRequest);
+                    changeRequestHistoryService.createHistoryRecord(historyModel);
+
+                }
+                //stop to wait for approval user take action
+                return;
+            }
+
+
+            //auto process next node handle id if ALL role users have ACCEPTED
+            var acceptedRoleHistory =
+                    ChangeRequestHistoryModel.builder().changeRequestId(changeRequestId)
+                            .oldChangeStatusId(changeRequest.getChangeStatusId())
+                            .newChangeStatusId(changeRequest.getChangeStatusId())
+                            .oldChangeFlowNodeId(currentNode.getId())
+                            .newChangeFlowNodeId(nextNodeId)
+                            .actionTaken(ApprovalResultStatus.ACCEPT).build();
+            changeRequestHistoryService.createHistoryRecord(acceptedRoleHistory);
+
+            //move change request node id to nextNodeId
+            changeRequest.setChangeFlowNodeId(nextNodeId);
+            changeRequestRepository.save(changeRequest);
+
+            // auto recursiveProcessChangeRequestTransition by Accept output handle
+            var followAcceptHandleId =
+                    flowManagementService.buildHandleOutputIdForApprovalAction(nextNodeId,
+                            ApprovalResultStatus.ACCEPT);
+            var followRoleAcceptEdge =
+                    flowManagementService.getOrDefaultEdgeByNodeHandleId(followAcceptHandleId,
+                            flowData);
+            recursiveProcessChangeRequestTransition(changeRequest, followRoleAcceptEdge, flowData);
         } else {
             // Case: Next node is UNKNOWN or any other unexpected type
             log.warn(String.format(
@@ -279,74 +398,32 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
         }
     }
 
-    @Override
-    public void handleStopTransitionAndUpdateChange(Long changeRequestId,
-                                                    ChangeRequestEntity changeRequest,
-                                                    FlowEdgeModel transitionDetails) {
-        // chờ đóng change
-        //changeRequest.setChangeFlowNodeId(transitionDetails.getC;
-        //changeRequest.setChangeStatusId(transitionDetails.getCurrentStatusId());
-        // changeStatusId remains unchanged as per requirement
-        changeRequestRepository.save(changeRequest);
-        log.warn(String.format(
-                "No more transition, Change Request %d to be updated changeFlowNodeHandleId to " +
-                        "'%s'.", changeRequestId, transitionDetails.getTargetNodeId()));
+
+    boolean shouldMoveChangeRequestByCheckingEdge(FlowEdgeModel edgeModel) {
+        // If the target node is END, we should not process further
+        boolean shouldMove = edgeModel != null && edgeModel.getTargetNodeModel() != null &&
+                NodeType.END != edgeModel.getTargetNodeModel().getParsedType();
+        if (!shouldMove) {
+            log.info("Change Request will not be moved. Not connect to any node or " +
+                    "target node is END node.");
+        }
+        return shouldMove;
+
     }
 
     @Override
-    public void handleCreateApprovalRequests(Long changeRequestId, Long changeTemplateId) {
-        var roles = changeRequestRoleService.findAllChangeFlowNodesByChangeTemplateIdOrRequestId(
-                changeTemplateId, changeRequestId);
-        changeRequestApprovalService.saveList(createApprovalRequestByChangeRoles(roles));
-    }
+    public void handleCreateApprovalRequests(Long changeRequestId, Long changeTemplateId,
+                                             List<ChangeRequestRoleUserModel> roleUserList) {
 
 
-    /**
-     * Converts a list of ChangeRequestRoleModel (containing nested user groups)
-     * into a flat list of ChangeRequestApprovalModel using Java Streams.
-     * Each ApprovalModel represents an individual approval task for a ChangeRequestRoleUserModel.
-     *
-     * @param changeRequestRoles A list of ChangeRequestRoleModel.
-     * @return A flattened list of ChangeRequestApprovalModel objects, or an empty list if input is null or empty.
-     */
-    @Override
-    public List<ChangeRequestApprovalModel> createApprovalRequestByChangeRoles(
-            List<ChangeRequestRoleModel> changeRequestRoles) {
-
-        if (changeRequestRoles == null || changeRequestRoles.isEmpty()) {
-            return new ArrayList<>();
+        if (roleUserList == null || roleUserList.isEmpty()) {
+            return;
         }
 
-        return changeRequestRoles.stream().filter(roleModel -> roleModel.getWorkflows() != null)
-                .flatMap(roleModel -> {
-                    Long currentChangeRequestId = roleModel.getChangeRequestId();
-                    ChangeFlowNodeType roleType = (roleModel.getChangeFlowNode() != null) ?
-                            roleModel.getChangeFlowNode().getType() : null;
-
-                    return roleModel.getWorkflows().stream()
-                            .filter(workflowUserList -> workflowUserList.getGroups() != null)
-                            .flatMap(workflowUserList -> workflowUserList.getGroups().stream()
-                                    .filter(userList -> userList.getUsers() != null &&
-                                            !userList.getUsers().isEmpty()).flatMap(userList -> {
-                                        List<ChangeRequestRoleUserModel> usersToApprove =
-                                                new ArrayList<>();
-                                        if (ChangeFlowNodeType.CAB.equals(roleType)) {
-                                            usersToApprove.add(userList.getUsers().get(0));
-                                        } else {
-                                            usersToApprove.addAll(userList.getUsers());
-                                        }
-                                        return usersToApprove.stream().map(user -> {
-                                            ChangeRequestApprovalModel approvalModel =
-                                                    new ChangeRequestApprovalModel();
-                                            approvalModel.setChangeRequestId(
-                                                    currentChangeRequestId);
-                                            approvalModel.setChangeRequestRoleUserId(user.getId());
-                                            approvalModel.setOverallStatus(
-                                                    ApprovalResultStatus.PENDING_APPROVAL);
-                                            return approvalModel;
-                                        });
-                                    }));
-                }).collect(Collectors.toList());
+        List<ChangeRequestApprovalModel> approvalList = roleUserList.stream()
+                .map(user -> ChangeRequestApprovalModel.builder().changeRequestId(changeRequestId)
+                        .overallStatus(ApprovalResultStatus.PENDING_APPROVAL)
+                        .changeRequestRoleUserId(user.getId()).build()).toList();
+        changeRequestApprovalService.saveList(approvalList);
     }
-
 }

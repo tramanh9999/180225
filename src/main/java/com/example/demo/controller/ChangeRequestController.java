@@ -1,12 +1,10 @@
 package com.example.demo.controller;
 
 import com.example.demo.constants.ServerUrl;
-import com.example.demo.model.ChangeRequestApprovalResultModel;
-import com.example.demo.model.ChangeRequestModel;
-import com.example.demo.model.ChangeRequestRoleModel;
-import com.example.demo.model.FlowEdgeModel;
+import com.example.demo.model.*;
 import com.example.demo.repository.ChangeRequestService;
 import com.example.demo.service.ChangeRequestRoleService;
+import com.example.demo.service.ChangeStatusService;
 import com.example.demo.service.FlowManagementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +23,7 @@ public class ChangeRequestController {
     private final ChangeRequestRoleService changeRequestRoleService;
     private final FlowManagementService flowManagementService;
     private final ChangeRequestService changeRequestService;
+    private ChangeStatusService changeStatusService;
 
     @GetMapping("/change-flow/{changeFlowId}/change-flow-node/{changeFlowNodeId}")
     public ResponseEntity<FlowEdgeModel> findCurrentAndNextNodeByCurrentPoint(
@@ -53,9 +52,9 @@ public class ChangeRequestController {
      * @return The updated ChangeRequestApprovalResultModel after processing the reply.
      */
     @PostMapping("/approval-requests/reply")
-    public ResponseEntity<ChangeRequestApprovalResultModel> replyToApprovalRequest(
+    public ResponseEntity<ChangeRequestModel> replyToApprovalRequest(
             @RequestBody ChangeRequestApprovalResultModel replyModel) {
-        ChangeRequestApprovalResultModel updatedApprovalRequest =
+        ChangeRequestModel updatedApprovalRequest =
                 changeRequestService.processApprovalReply(replyModel);
         return ResponseEntity.ok(updatedApprovalRequest);
     }
@@ -69,12 +68,23 @@ public class ChangeRequestController {
      * @param changeRequestId The ID of the Change Request to transition.
      * @return The updated ChangeRequestModel.
      */
-    @PostMapping("/{changeRequestId}/transition-status")
-    public ResponseEntity<ChangeRequestModel> transitionChangeRequestStatus(
-            @PathVariable Long changeRequestId, Long changeStatusId) {
+    @PostMapping("/{changeRequestId}/process-change-request")
+    public ResponseEntity<ChangeRequestModel> transitionByChangeStatus(
+            @PathVariable Long changeRequestId,
+            @RequestBody ChangeProcessModel changeProcessModel) {
         ChangeRequestModel updatedCr =
                 changeRequestService.processChangeRequestCoordinatorTransition(changeRequestId,
-                        changeStatusId);
+                        changeProcessModel);
         return ResponseEntity.ok(updatedCr);
     }
+
+    // get all change statuses for a change request  with path variable  is change request id
+    @GetMapping("/{changeRequestId}/statuses")
+    public ResponseEntity<List<ChangeStatusModel>> getAllChangeStatusesForChangeRequest(
+            @PathVariable Long changeRequestId) {
+        List<ChangeStatusModel> remainingStatusesInSameStage =
+                changeStatusService.findAllChangeStatusInSameStage(changeRequestId);
+        return ResponseEntity.ok(remainingStatusesInSameStage);
+    }
+
 }

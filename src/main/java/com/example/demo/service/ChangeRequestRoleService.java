@@ -34,12 +34,18 @@ public interface ChangeRequestRoleService {
     List<ChangeRequestRoleModel> findAllChangeFlowNodesByChangeTemplateIdOrRequestId(
             Long changeTemplateId, Long changeRequestId) throws BusinessException;
 
+
+    ChangeRequestRoleModel getChangeRequestRoleByChangeFlowNodeId(Long changeRequestId,
+                                                                  Long changeTemplateId,
+                                                                  Long changeFlowNodeId);
+
     /**
      * Group and sort Change Request Roles by user groups.
      * This method groups the roles by user groups and sorts them within each group.
      *
      * @param items The list of Change Request Role models to group and sort
-     * @return
+     * @return List of Change Request Role models grouped by user groups and sorted
      */
     List<ChangeRequestRoleModel> groupAndSortCabUserGroups2(List<ChangeRequestRoleModel> items);
+
 }

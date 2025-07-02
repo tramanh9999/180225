@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -57,10 +58,12 @@ public class ChangeFlowDataParser {
     /**
      * Parse a JSON string into a list of FlowEdgeModel objects.
      *
-     * @param jsonString the JSON string to parse
+     * @param jsonString   the JSON string to parse
+     * @param indexedNodes
      * @return a list of FlowEdgeModel objects, or an empty list if parsing fails
      */
-    public static List<FlowEdgeModel> parseFlowEdgesFromJson(String jsonString) {
+    public static List<FlowEdgeModel> parseFlowEdgesFromJson(String jsonString,
+                                                             Map<String, ChangeFlowNodeModel> indexedNodes) {
         if (jsonString == null || jsonString.trim().isEmpty()) {
             return Collections.emptyList();
         }
@@ -68,7 +71,10 @@ public class ChangeFlowDataParser {
             List<FlowEdgeRawModel> flowEdgeRawModels =
                     JSON.parseObject(jsonString, new TypeReference<>() {
                     });
-            return flowEdgeRawModels.stream().map(FlowEdgeModel::fromSimpleFlowEdge).toList();
+            // Convert raw edges to FlowEdgeModel using the provided indexed nodes
+            return flowEdgeRawModels.stream()
+                    .map(rawEdge -> FlowEdgeModel.fromSimpleFlowEdge(rawEdge, indexedNodes))
+                    .toList();
         } catch (Exception e) {
             log.error("Error parsing JSON string to List<FlowEdgeModel> using Fastjson: {}",
                     e.getMessage(), e);
@@ -99,7 +105,7 @@ public class ChangeFlowDataParser {
      * @return The generated mapKey string.
      * @throws IllegalArgumentException if sourceNodeId or sourceHandleId is null or empty.
      */
-    public static String createMapKey(String sourceHandleId) {
+    public static String createEdgeMapKey(String sourceHandleId) {
         return sourceHandleId;
     }
 

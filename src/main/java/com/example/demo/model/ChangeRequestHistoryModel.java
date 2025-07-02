@@ -21,8 +21,8 @@ public class ChangeRequestHistoryModel {
     private Long newChangeStatusId;
     private String oldChangeStatusName;
     private String newChangeStatusName;
-    private String oldChangeFlowNodeHandleId;
-    private String newChangeFlowNodeHandleId;
+    private Long oldChangeFlowNodeId;
+    private Long newChangeFlowNodeId;
     private ApprovalResultStatus actionTaken;
     private ChangeStage newChangeStage; // New field
     private ChangeStage oldChangeStage; // New field

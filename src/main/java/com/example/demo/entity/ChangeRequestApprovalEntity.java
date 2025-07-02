@@ -30,4 +30,7 @@ public class ChangeRequestApprovalEntity extends BaseEntity<Long> {
     @Enumerated(EnumType.STRING)
     private ApprovalResultStatus overallStatus;
 
+    @Column(name = "OVERALL_USERNAME")
+    private String overallUsername;
+
 }
