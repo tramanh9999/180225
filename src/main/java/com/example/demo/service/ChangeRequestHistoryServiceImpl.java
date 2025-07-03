@@ -32,7 +32,7 @@ public class ChangeRequestHistoryServiceImpl implements ChangeRequestHistoryServ
 
     @Transactional
     @Override
-    public ChangeRequestHistoryModel createHistoryRecord(ChangeRequestHistoryModel historyModel) {
+    public ChangeRequestHistoryModel save(ChangeRequestHistoryModel historyModel) {
         if (historyModel.getChangeRequestId() == null) {
             throw new IllegalArgumentException(
                     "Change Request ID cannot be null for history record.");

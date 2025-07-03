@@ -128,6 +128,9 @@ public class ChangeFlowNodeRepositoryCustomImpl implements ChangeFlowNodeReposit
 
         // Use Text Blocks (Java 15+) for multi-line SQL for readability.
         // If using older Java, concatenate strings or use a separate SQL file.
+
+        // join  with change request work flow node details
+
         String sql = """
                 SELECT
                     flowNode.ID,

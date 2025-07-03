@@ -7,5 +7,5 @@ public interface ChangeRequestHistoryService {
 
 
     @Transactional
-    ChangeRequestHistoryModel createHistoryRecord(ChangeRequestHistoryModel historyModel);
+    ChangeRequestHistoryModel save(ChangeRequestHistoryModel historyModel);
 }

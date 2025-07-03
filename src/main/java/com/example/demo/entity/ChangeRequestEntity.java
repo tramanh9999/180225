@@ -32,4 +32,7 @@ public class ChangeRequestEntity {
 
     @Column(name = "CHANGE_FLOW_NODE_ID")
     private Long changeFlowNodeId;
+
+    @Column(name = "CHANGE_FLOW_NODE_NODE_ID")
+    private Long changeFlowNodeNodeId;
 }

@@ -196,6 +196,13 @@ public class ChangeRequestRoleServiceImpl implements ChangeRequestRoleService {
 
             List<ChangeRequestRoleUserModel> users =
                     changeRequestRoleUserService.findAllByChangeRequestId(changeRequestId);
+
+            //find all workflowId by workflowNodeDetailId in change request role user
+            if (users == null || users.isEmpty()) {
+                return requestRoleLst;
+            }
+
+
             usersByChangeRequestRoleId = users.stream().collect(
                     Collectors.groupingBy(ChangeRequestRoleUserModel::getChangeRequestRoleId));
         }

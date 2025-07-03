@@ -14,6 +14,8 @@ public interface ChangeRequestRoleUserRepository
         extends JpaRepository<ChangeRequestRoleUserEntity, Long> {
     List<ChangeRequestRoleUserEntity> findAllByChangeRequestId(Long changeRequestId);
 
+    //create custom query to find all by change request id and role id
+
 
     /**
      * Delete all by change request id.

@@ -87,4 +87,16 @@ public class ChangeRequestController {
         return ResponseEntity.ok(remainingStatusesInSameStage);
     }
 
+    // api for getChangeRequestRoleByChangeFlowNodeId
+    @GetMapping("/{changeRequestId}/changeTemplate/{changeTemplateId}" +
+            "/change-flow-node/{changeFlowNodeId}")
+    public ResponseEntity<ChangeRequestRoleModel> getChangeRequestRoleByChangeFlowNodeId(
+            @PathVariable Long changeRequestId, @PathVariable Long changeTemplateId,
+            @PathVariable Long changeFlowNodeId) {
+        ChangeRequestRoleModel changeRequestRole =
+                changeRequestRoleService.getChangeRequestRoleByChangeFlowNodeId(changeRequestId,
+                        changeTemplateId, changeFlowNodeId);
+        return ResponseEntity.ok(changeRequestRole);
+    }
+
 }
