@@ -37,31 +37,6 @@ public class ChangeRequestHistoryServiceImpl implements ChangeRequestHistoryServ
             throw new IllegalArgumentException(
                     "Change Request ID cannot be null for history record.");
         }
-
-        // Fetch old status details to get its stage
-        if (historyModel.getOldChangeStatusId() != null &&
-                historyModel.getOldChangeStatusName() == null &&
-                historyModel.getOldChangeStage() == null) {
-            changeStatusService.getChangeStatusById(historyModel.getOldChangeStatusId())
-                    .ifPresent(oldStatus -> {
-                        historyModel.setOldChangeStatusName(oldStatus.getName());
-                        historyModel.setOldChangeStage(
-                                oldStatus.getStage()); // Assuming ChangeStatusModel.getStage() returns ChangeStage enum
-                    });
-        }
-
-        // Fetch new status details to get its name and stage
-        if (historyModel.getNewChangeStatusId() != null &&
-                historyModel.getNewChangeStatusName() == null &&
-                historyModel.getNewChangeStage() == null) {
-            changeStatusService.getChangeStatusById(historyModel.getNewChangeStatusId())
-                    .ifPresent(newStatus -> {
-                        historyModel.setNewChangeStatusName(newStatus.getName());
-                        historyModel.setNewChangeStage(
-                                newStatus.getStage()); // Assuming ChangeStatusModel.getStage() returns ChangeStage enum
-                    });
-        }
-
         ChangeRequestHistoryEntity entityToSave = historyMapper.toEntity(historyModel);
         ChangeRequestHistoryEntity savedEntity = historyRepository.save(entityToSave);
         return historyMapper.toModel(savedEntity);

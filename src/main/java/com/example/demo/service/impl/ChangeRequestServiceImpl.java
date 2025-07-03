@@ -238,6 +238,11 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
             // If the next node is not confined in change flow / is END node, then stop processing
             return changeRequestMapper.toDto(changeRequestData.getChangeRequest());
         }
+        ApprovalResultStatus actionTaken = null;
+        Long nextChangeStatusId = changeProcessModel.getChangeStatusId();
+        transitionChangeRequest(changeRequestData.getChangeRequest(), nextChangeStatusId,
+                changeRequestData.getChangeRequest().getChangeFlowNodeId(), actionTaken);
+
         recursiveProcessChangeRequestTransition(changeRequestData.getChangeRequest(),
                 currentChangeFlowEdge, changeRequestData.getFlowData());
         return changeRequestMapper.toDto(changeRequestData.getChangeRequest());
@@ -246,25 +251,18 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
 
     @Transactional
     @Override
-    public void processInNextStageNode(ChangeRequestEntity changeRequest,
-                                       ChangeFlowNodeModel previousNode,
-                                       ChangeFlowNodeModel currentNd,
-                                       IndexedChangeFlowDataModel flowData) {
+    public void continueProcessStageNode(ChangeRequestEntity changeRequest,
+                                         ChangeFlowNodeModel previousNode,
+                                         ChangeFlowNodeModel currentNode,
+                                         IndexedChangeFlowDataModel flowData) {
         // Case: Next node is a "stage node" , it always connected to a change status
-        var toUpdateChangeStatusId = currentNd.getParsedHandle().getChangeStatusId();
-        var oldChangeFlowNodeId = previousNode.getId();
-        //log change request
-        log.info(String.format(
-                "Change Request %d moved from node %s to node %s with status change from %d to %d.",
-                changeRequest.getId(), oldChangeFlowNodeId, currentNd.getId(),
-                changeRequest.getChangeStatusId(), toUpdateChangeStatusId));
-
-
+        var currentStatusId = currentNode.getParsedHandle().getChangeStatusId();
         //auto process next node handle id if ok
-        var currentStartHandleId = toUpdateChangeStatusId + FlowConstants.HANDLE_SEPARATOR +
-                FlowConstants.OUTPUT_KEYWORD;
-        var currentEdge = flowManagementService.getOrDefaultEdgeByNodeHandleId(currentStartHandleId,
-                flowData);
+        var currentOutputHandleId =
+                currentStatusId + FlowConstants.HANDLE_SEPARATOR + FlowConstants.OUTPUT_KEYWORD;
+        var currentEdge =
+                flowManagementService.getOrDefaultEdgeByNodeHandleId(currentOutputHandleId,
+                        flowData);
         recursiveProcessChangeRequestTransition(changeRequest, currentEdge, flowData);
     }
 
@@ -287,41 +285,45 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
         if (!shouldMoveChangeRequestByCheckingEdge(edgeModel)) {
             return;
         }
-        var currentNode = edgeModel.getSourceNodeModel();
-        var nextNode = edgeModel.getTargetNodeModel();
-        Long nextNodeId = nextNode.getId();
-        NodeType nextNodeType = nextNode.getParsedType();
+        var previousNode = edgeModel.getSourceNodeModel();
+        var currentNode = edgeModel.getTargetNodeModel();
+        Long currentNodeId = currentNode.getId();
+        NodeType currentNodeType = currentNode.getParsedType();
 
-        var actionTaken = currentNode.getParsedHandle().getApprovedAction();
+        var actionTaken = previousNode.getParsedHandle().getApprovedAction();
         Long nextChangeStatusId =
                 currentNode.getParsedType().getCommonType() == NodeCommonType.CHANGE_STAGE ?
                         currentNode.getParsedHandle().getChangeStatusId() :
                         changeRequest.getChangeStatusId();
-        transitionChangeRequest(changeRequest, nextChangeStatusId, nextNodeId, actionTaken);
+        transitionChangeRequest(changeRequest, nextChangeStatusId, currentNodeId, actionTaken);
 
-        if (nextNodeType.getCommonType() == NodeCommonType.CHANGE_STAGE) {
-            processInNextStageNode(changeRequest, currentNode, nextNode, flowData);
-        } else if (nextNodeType.getCommonType() == NodeCommonType.CHANGE_ROLE) {
-            var nextChangeRole = changeRequestRoleService.getChangeRequestRoleByChangeFlowNodeId(
+        if (currentNodeType.getCommonType() == NodeCommonType.CHANGE_STAGE) {
+            continueProcessStageNode(changeRequest, previousNode, currentNode, flowData);
+        } else if (currentNodeType.getCommonType() == NodeCommonType.CHANGE_ROLE) {
+            var currentChangeRole = changeRequestRoleService.getChangeRequestRoleByChangeFlowNodeId(
                     changeRequest.getId(), changeRequest.getChangeTemplateId(),
-                    edgeModel.getTargetNodeModel().getId());
-
-
-            boolean allUserInNextRoleAccepted = nextChangeRole.getWorkflows().stream()
+                    currentNode.getId());
+            //add logic to check if empty users in currentChangeRole
+            var approvalList = currentChangeRole.getWorkflows().stream()
                     .flatMap(workflow -> workflow.getGroups().stream())
                     .flatMap(group -> group.getUsers().stream())
-                    .map(ChangeRequestRoleUserModel::getApprovalModel).noneMatch(
-                            approval -> ApprovalResultStatus.ACCEPT != approval.getOverallStatus());
-            if (allUserInNextRoleAccepted) {
-                processsInAcceptedApprovalNode(changeRequest, currentNode, nextNode, flowData);
+                    .map(ChangeRequestRoleUserModel::getApprovalModel).toList();
+            //check approvalList empty or all users accepted
+
+            boolean allUserAccepted = !approvalList.isEmpty() && approvalList.stream().noneMatch(
+                    approval -> ApprovalResultStatus.ACCEPT != approval.getOverallStatus());
+            if (allUserAccepted) {
+                continueProcessAcceptedApprovalNode(changeRequest, previousNode, currentNode,
+                        flowData);
             } else {
-                processInNextApprovalNode(changeRequest, currentNode, nextNode, nextChangeRole);
+                continueProcessApprovalNode(changeRequest, previousNode, currentNode,
+                        currentChangeRole);
             }
         } else {
             // Case: Next node is UNKNOWN or any other unexpected type
             log.warn(String.format(
                     "Unhandled transition for Change Request %d. Next node type: %s (ID: %s). No status or approval action taken.",
-                    changeRequestId, nextNodeType, nextNodeId));
+                    changeRequestId, currentNodeType, currentNodeId));
 
         }
 
@@ -331,10 +333,10 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
 
     @Override
     @Transactional
-    public void processsInAcceptedApprovalNode(ChangeRequestEntity changeRequest,
-                                               ChangeFlowNodeModel previousNode,
-                                               ChangeFlowNodeModel currentNode,
-                                               IndexedChangeFlowDataModel flowData) {
+    public void continueProcessAcceptedApprovalNode(ChangeRequestEntity changeRequest,
+                                                    ChangeFlowNodeModel previousNode,
+                                                    ChangeFlowNodeModel currentNode,
+                                                    IndexedChangeFlowDataModel flowData) {
         Long currentNodeId = currentNode.getId();
         // auto recursiveProcessChangeRequestTransition by Accept output handle
         var currentAcceptHandleOutputId =
@@ -346,18 +348,14 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
         recursiveProcessChangeRequestTransition(changeRequest, currentEdge, flowData);
     }
 
-    private void processInNextApprovalNode(ChangeRequestEntity changeRequest,
-                                           ChangeFlowNodeModel previousNode,
-                                           ChangeFlowNodeModel currentNode,
-                                           ChangeRequestRoleModel currentRole) {
+    private void continueProcessApprovalNode(ChangeRequestEntity changeRequest,
+                                             ChangeFlowNodeModel previousNode,
+                                             ChangeFlowNodeModel currentNode,
+                                             ChangeRequestRoleModel currentRole) {
 
         var actionTaken = previousNode.getParsedHandle().getApprovedAction();
         transitionChangeRequest(changeRequest, changeRequest.getChangeStatusId(),
                 currentNode.getId(), actionTaken);
-        //log change request
-        log.info(String.format("Change Request %d moved from node %s to node %s with status %d.",
-                changeRequest.getId(), previousNode.getId(), currentNode.getId(),
-                changeRequest.getChangeStatusId()));
         for (ChangeRequestRoleUserWorkflowListModel oneWorkflowWithApprovalData : currentRole.getWorkflows()) {
             //flat the users in workflow
             // and process each group in the workflow
@@ -410,6 +408,12 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
     void transitionChangeRequest(ChangeRequestEntity changeRequest, Long newChangeRequestStatusId,
                                  Long newChangeFlowNodeId, ApprovalResultStatus actionTaken) {
 
+
+        //log change request
+        log.info(String.format(
+                "Change Request %d moved from node %s -> %s with status %d -> " + "%d",
+                changeRequest.getId(), changeRequest.getChangeFlowNodeId(), newChangeFlowNodeId,
+                changeRequest.getChangeStatusId(), newChangeRequestStatusId));
         // Update the change request with new status and node id if at lease modified
         if (!Objects.equals(changeRequest.getChangeStatusId(), newChangeRequestStatusId) ||
                 !Objects.equals(changeRequest.getChangeFlowNodeId(), newChangeFlowNodeId)) {
@@ -435,8 +439,7 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
         boolean shouldMove = edgeModel != null && edgeModel.getTargetNodeModel() != null &&
                 NodeType.END != edgeModel.getTargetNodeModel().getParsedType();
         if (!shouldMove) {
-            log.info("Change Request will not be moved. Not connect to any node or " +
-                    "target node is END node.");
+            log.info("Change Request will not be moved. next node is " + edgeModel);
         }
         return shouldMove;
 

@@ -13,14 +13,14 @@ public interface ChangeRequestRoleService {
     @Transactional
     void saveList(Long changeRequestId, List<ChangeRequestRoleModel> roles);
 
-    /**
-     * Find all Change Request Roles associated with a specific Change Request.
-     *
-     * @param changeRequestId The ID of the Change Request
-     * @return List of Change Request Role entities associated with the specified
-     * Change Request ID
-     */
-    List<ChangeRequestRoleModel> findAllByChangeRequestId(Long changeRequestId);
+//    /**
+//     * Find all Change Request Roles associated with a specific Change Request.
+//     *
+//     * @param changeRequestId The ID of the Change Request
+//     * @return List of Change Request Role entities associated with the specified
+//     * Change Request ID
+//     */
+//    List<ChangeRequestRoleModel> findAllByChangeRequestId(Long changeRequestId);
 
     /**
      * Validate a list of Change Request Role models.
@@ -46,6 +46,6 @@ public interface ChangeRequestRoleService {
      * @param items The list of Change Request Role models to group and sort
      * @return List of Change Request Role models grouped by user groups and sorted
      */
-    List<ChangeRequestRoleModel> groupAndSortCabUserGroups2(List<ChangeRequestRoleModel> items);
+    List<ChangeRequestRoleModel> getWorkflowAndGroup(List<ChangeRequestRoleModel> items);
 
 }

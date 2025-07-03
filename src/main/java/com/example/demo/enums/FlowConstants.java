@@ -41,7 +41,6 @@ public class FlowConstants {
             String.format("^(.*?)%s(%s|%s)$", FlowConstants.HANDLE_SEPARATOR,
                     FlowConstants.INPUT_KEYWORD, FlowConstants.OUTPUT_KEYWORD),
             Pattern.CASE_INSENSITIVE);
-    public static final int NODE_ID_HANDLE_PATTERN__NODE_ID_INDEX = 1;
     public static final int NODE_ID_HANDLE_PATTERN__HANDLE_TYPE_INDEX = 2;
 
 }

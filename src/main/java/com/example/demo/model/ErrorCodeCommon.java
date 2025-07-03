@@ -116,8 +116,8 @@ public class ErrorCodeCommon {
             new ErrorCodeCommon("3001", "No validate change status", HttpStatus.BAD_REQUEST);
     public static final ErrorCodeCommon CHANGE_REQUEST_INVALID_UPDATE_STATUS =
             new ErrorCodeCommon("3001",
-                    "Unable to update change request by change status {0}-{1} not in current " +
-                            "change stage {2}", HttpStatus.BAD_REQUEST);
+                    "Unable to update change request by change status {0} - {1} not in current" +
+                            " change stage {2}", HttpStatus.BAD_REQUEST);
     public static final ErrorCodeCommon CHANGE_REQUEST_APPROVAL_ID_REQUIRED =
             new ErrorCodeCommon("CHANGE_REQUEST_APPROVAL_ID_REQUIRED",
                     "Change request approval ID must not be null or empty", HttpStatus.BAD_REQUEST);
@@ -142,6 +142,9 @@ public class ErrorCodeCommon {
             new ErrorCodeCommon("CHANGE_FLOW_NODES_NOT_FOUND",
                     "Change flow nodes not found for the given change flow ID : {0}.",
                     HttpStatus.NOT_FOUND);
+    public static final ErrorCodeCommon CHANGE_NODE_ID_REQUIRED =
+            new ErrorCodeCommon("CHANGE_NODE_ID_REQUIRED",
+                    "Change node ID must not be null or empty", HttpStatus.BAD_REQUEST);
 
     private final String code;
     private final String message;

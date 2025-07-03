@@ -1,6 +1,7 @@
 package com.example.demo.service.impl;
 
 import com.example.demo.entity.ChangeFlowNodeEntity;
+import com.example.demo.enums.ChangeFlowNodeType;
 import com.example.demo.mapper.ChangeFlowNodeMapper;
 import com.example.demo.model.ChangeFlowNodeModel;
 import com.example.demo.model.PagingRequestModel;
@@ -45,7 +46,8 @@ public class ChangeFlowNodeServiceImpl implements ChangeFlowNodeService {
     @Override
     public List<ChangeFlowNodeModel> findChangeFlowNodesByTemplateId(Long changeTemplateId) {
         return new ArrayList<>(
-                changeFlowNodeRepository.findChangeFlowNodesByTemplateId(changeTemplateId));
+                changeFlowNodeRepository.findChangeFlowNodesByTemplateIdAndTypeIn(changeTemplateId,
+                        List.of(ChangeFlowNodeType.CAB, ChangeFlowNodeType.APPROVAL)));
     }
 
     @Override

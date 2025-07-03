@@ -12,6 +12,9 @@ public class ChangeRequestWorkflowDetailModel {
     private Long id;
     private Long changeRequestWorkflowId;
     private Long changeNodeId;
+
+    private ChangeNodeModel changeNodeModel;
+    private ChangeRequestWorkflowModel changeRequestWorkflowModel;
     // Add any other fields that might be relevant for your business logic
     // even if they are not directly in the entity (e.g., nodeName, workflowName if enriched)
 }

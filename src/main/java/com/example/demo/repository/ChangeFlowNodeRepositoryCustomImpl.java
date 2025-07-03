@@ -118,18 +118,10 @@ public class ChangeFlowNodeRepositoryCustomImpl implements ChangeFlowNodeReposit
 
 
     @Override
-    public List<ChangeFlowNodeModel> findChangeFlowNodesByTemplateId(Long changeTemplateId) {
-        // Use Objects.requireNonNull for immediate validation, or throw IllegalArgumentException
+    public List<ChangeFlowNodeModel> findChangeFlowNodesByTemplateIdAndTypeIn(Long changeTemplateId,
+                                                                              List<ChangeFlowNodeType> types) {
         Objects.requireNonNull(changeTemplateId, "Change Template ID cannot be null");
-        // Or your original validation:
-        // if (changeTemplateId == null) {
-        //     throw new IllegalArgumentException("Change Template ID cannot be null");
-        // }
 
-        // Use Text Blocks (Java 15+) for multi-line SQL for readability.
-        // If using older Java, concatenate strings or use a separate SQL file.
-
-        // join  with change request work flow node details
 
         String sql = """
                 SELECT
@@ -142,8 +134,10 @@ public class ChangeFlowNodeRepositoryCustomImpl implements ChangeFlowNodeReposit
                     CHANGE_TEMPLATE changeTemplate
                     JOIN CHANGE_FLOW changeFlow ON changeTemplate.CHANGE_FLOW_ID = changeFlow.ID
                     JOIN CHANGE_FLOW_NODE flowNode ON changeFlow.ID = flowNode.CHANGE_FLOW_ID
+                
                 WHERE
                     changeTemplate.ID = :changeTemplateId
+                 AND flowNode.TYPE IN :types
                 
                 ORDER BY
                     flowNode.NODE_LEVEL ASC
@@ -151,6 +145,8 @@ public class ChangeFlowNodeRepositoryCustomImpl implements ChangeFlowNodeReposit
 
         Query query = entityManager.createNativeQuery(sql);
         query.setParameter("changeTemplateId", changeTemplateId);
+        query.setParameter("types",
+                types.stream().map(ChangeFlowNodeType::name).collect(Collectors.toList()));
 
         // Get the result list. createNativeQuery returns List<Object[]>.
         List<Object[]> results = query.getResultList();

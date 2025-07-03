@@ -42,23 +42,14 @@ public class ChangeRequestHistoryEntity extends BaseEntity<Long> {
     @Column(name = "NEW_CHANGE_STATUS_ID")
     private Long newChangeStatusId;
 
+    @Column(name = "OLD_CHANGE_FLOW_NODE_ID", length = 255)
+    private Long oldChangeFlowNodeId;
 
-    @Column(name = "OLD_CHANGE_STATUS_NAME", length = 255)
-    private String oldChangeStatusName;
-
-    @Column(name = "NEW_CHANGE_STATUS_NAME", length = 255)
-    private String newChangeStatusName;
-
-
-    @Column(name = "OLD_CHANGE_FLOW_NODE_HANDLE_ID", length = 255)
-    private String oldChangeFlowNodeHandleId;
-
-    @Column(name = "NEW_CHANGE_FLOW_NODE_HANDLE_ID", length = 255)
-    private String newChangeFlowNodeHandleId;
+    @Column(name = "NEW_CHANGE_FLOW_NODE_ID", length = 255)
+    private Long newChangeFlowNodeId;
 
 
     @Column(name = "ACTION_TAKEN", length = 100)
-
     @Enumerated(EnumType.STRING)
     private ApprovalResultStatus actionTaken;
 
@@ -72,6 +63,4 @@ public class ChangeRequestHistoryEntity extends BaseEntity<Long> {
     @Enumerated(EnumType.STRING)
     private ChangeStage oldChangeStage;
 
-    // createdDate, createdBy, modifiedDate, modifiedBy are typically handled by BaseEntity.
-    // If not, you'd add them here with @Column annotations and respective types (e.g., LocalDateTime)
 }

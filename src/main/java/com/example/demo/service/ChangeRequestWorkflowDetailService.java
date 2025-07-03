@@ -23,4 +23,18 @@ public interface ChangeRequestWorkflowDetailService {
 
     Optional<ChangeRequestWorkflowDetailModel> getDetailByWorkflowIdAndChangeNodeId(
             Long changeRequestWorkflowId, Long changeNodeId);
+
+    /**
+     * [EN] Description: Retrieves a list of ChangeRequestWorkflowDetailModel objects whose IDs are present in the provided list of IDs.
+     * <p>
+     * [EN] Parameter changeRequestWorkflowDetailIds: A list of Long values representing the IDs of the ChangeRequestWorkflowDetailModel objects to retrieve.
+     * This list cannot be null, and should contain valid Long values representing existing ChangeRequestWorkflowDetailModel IDs.
+     * An empty list will result in an empty list being returned.
+     * <p>
+     * [EN] Returns: A List of ChangeRequestWorkflowDetailModel objects. Each object in the list corresponds to a ChangeRequestWorkflowDetailModel
+     * whose ID was present in the input `changeRequestWorkflowDetailIds` list. The order of the returned list is not guaranteed to match the order
+     * of IDs in the input list. If no ChangeRequestWorkflowDetailModel objects are found with the given IDs, an empty list is returned.
+     */
+    List<ChangeRequestWorkflowDetailModel> findWorkflowDetailByIds(
+            List<Long> changeRequestWorkflowDetailIds);
 }

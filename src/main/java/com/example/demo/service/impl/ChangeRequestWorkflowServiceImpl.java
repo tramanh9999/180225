@@ -22,7 +22,7 @@ public class ChangeRequestWorkflowServiceImpl implements ChangeRequestWorkflowSe
     private final ChangeRequestWorkflowMapper changeRequestWorkflowMapper;
 
     @Override
-    public Map<Long, ChangeRequestWorkflowModel> findByIdIn(List<Long> ids) {
+    public Map<Long, ChangeRequestWorkflowModel> getMapChangeWorkflowByIds(List<Long> ids) {
         if (ids == null || ids.isEmpty()) {
             return Map.of();
         }

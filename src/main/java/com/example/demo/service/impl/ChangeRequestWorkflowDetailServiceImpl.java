@@ -2,15 +2,23 @@ package com.example.demo.service.impl;
 
 import com.example.demo.entity.ChangeRequestWorkflowDetailEntity;
 import com.example.demo.mapper.ChangeRequestWorkflowDetailMapper;
+import com.example.demo.model.BusinessException;
+import com.example.demo.model.ChangeNodeModel;
 import com.example.demo.model.ChangeRequestWorkflowDetailModel;
+import com.example.demo.model.ErrorCodeCommon;
 import com.example.demo.repository.ChangeRequestWorkflowDetailRepository;
+import com.example.demo.service.ChangeFlowNodeService;
+import com.example.demo.service.ChangeNodeService;
 import com.example.demo.service.ChangeRequestWorkflowDetailService;
+import com.example.demo.service.ChangeRequestWorkflowService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
@@ -20,6 +28,9 @@ public class ChangeRequestWorkflowDetailServiceImpl implements ChangeRequestWork
 
     private final ChangeRequestWorkflowDetailRepository detailRepository;
     private final ChangeRequestWorkflowDetailMapper detailMapper;
+    private final ChangeRequestWorkflowService changeRequestWorkflowService;
+    private final ChangeFlowNodeService changeFlowNodeService;
+    private final ChangeNodeService changeNodeService;
 
 
     @Override
@@ -91,5 +102,55 @@ public class ChangeRequestWorkflowDetailServiceImpl implements ChangeRequestWork
         return detailRepository.findByChangeRequestWorkflowIdAndChangeNodeId(
                         changeRequestWorkflowId, changeNodeId)
                 .map(detailMapper::toModel); // Map entity to model
+    }
+
+    @Override
+    public List<ChangeRequestWorkflowDetailModel> findWorkflowDetailByIds(
+            List<Long> changeRequestWorkflowDetailIds) {
+        var workflowDetails = detailRepository.findByIdIn(changeRequestWorkflowDetailIds).stream()
+                .map(detailMapper::toModel).collect(Collectors.toList());
+
+        //filter not null workflow id
+        var workflowIds = workflowDetails.stream()
+                .map(ChangeRequestWorkflowDetailModel::getChangeRequestWorkflowId)
+                .filter(Objects::nonNull).toList();
+
+        var changeNodeIds =
+                workflowDetails.stream().map(ChangeRequestWorkflowDetailModel::getChangeNodeId)
+                        .filter(Objects::nonNull).toList();
+
+        //convert to map
+        var workflowMaps = changeRequestWorkflowService.getMapChangeWorkflowByIds(workflowIds);
+
+        var changeNodeMaps = changeNodeService.findAllByIds(changeNodeIds).stream()
+                .collect(Collectors.toMap(ChangeNodeModel::getId, Function.identity()));
+
+        // set    private ChangeNodeModel changeNodeModel;
+        //    private ChangeRequestWorkflowModel changeRequestWorkflowModel;  to workflowDetails
+        workflowDetails.forEach(detail -> {
+
+            // if id null or not found, throw exception
+            if (detail.getChangeRequestWorkflowId() == null) {
+                // throw BusinessException
+                throw new BusinessException(ErrorCodeCommon.CHANGE_REQUEST_WORKFLOW_ID_REQUIRED);
+            }
+            if (workflowMaps.get(detail.getChangeRequestWorkflowId()) == null) {
+                throw new BusinessException(ErrorCodeCommon.CHANGE_REQUEST_WORKFLOW_ID_REQUIRED);
+            }
+            // same with change node
+            if (detail.getChangeNodeId() == null) {
+                // throw BusinessException
+                throw new BusinessException(ErrorCodeCommon.CHANGE_NODE_ID_REQUIRED);
+            }
+            if (changeNodeMaps.get(detail.getChangeNodeId()) == null) {
+                throw new BusinessException(ErrorCodeCommon.CHANGE_NODE_ID_REQUIRED);
+            }
+
+            detail.setChangeRequestWorkflowModel(
+                    workflowMaps.get(detail.getChangeRequestWorkflowId()));
+            detail.setChangeNodeModel(changeNodeMaps.get(detail.getChangeNodeId()));
+        });
+
+        return workflowDetails;
     }
 }
