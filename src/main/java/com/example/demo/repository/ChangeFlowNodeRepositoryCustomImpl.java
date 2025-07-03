@@ -141,9 +141,7 @@ public class ChangeFlowNodeRepositoryCustomImpl implements ChangeFlowNodeReposit
                     JOIN CHANGE_FLOW_NODE flowNode ON changeFlow.ID = flowNode.CHANGE_FLOW_ID
                 WHERE
                     changeTemplate.ID = :changeTemplateId
-                    AND changeTemplate.DELETED = 0
-                    AND changeTemplate.IS_ACTIVE = 1
-                    AND changeFlow.DELETED = 0
+                
                 ORDER BY
                     flowNode.NODE_LEVEL ASC
                 """;
@@ -165,7 +163,10 @@ public class ChangeFlowNodeRepositoryCustomImpl implements ChangeFlowNodeReposit
                 .name((String) row[1])                     // Assuming NAME is second column and a String
                 .changeFlowId(
                         ((Number) row[2]).longValue()) // Assuming CHANGE_FLOW_ID is third and Number
-                .type((ChangeFlowNodeType) row[3])                     // Assuming TYPE is fourth
+                .type((ChangeFlowNodeType) ChangeFlowNodeType.valueOf(
+                        String.valueOf(row[3])))                    // Assuming
+                // TYPE
+                // is fourth
                 // and String
                 .nodeLevel(
                         ((Number) row[4]).intValue())   // Assuming NODE_LEVEL is fifth and Number

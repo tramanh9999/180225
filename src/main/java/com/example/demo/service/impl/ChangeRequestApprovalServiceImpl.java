@@ -76,7 +76,11 @@ public class ChangeRequestApprovalServiceImpl implements ChangeRequestApprovalSe
     @Override
     public List<ChangeRequestApprovalModel> findByChangeRequestRoleUserIdIn(
             List<Long> roleUserIds) {
-        return approvalRepository.findByChangeRequestRoleUserIdIn(roleUserIds);
+
+        return roleUserIds == null || roleUserIds.isEmpty() ? List.of() :
+                // Return an empty list if no role user IDs are provided
+                approvalMapper.toModel(
+                        approvalRepository.findByChangeRequestRoleUserIdIn(roleUserIds));
     }
 
     @Override

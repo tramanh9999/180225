@@ -59,7 +59,7 @@ public class ChangeFlowNodeServiceImpl implements ChangeFlowNodeService {
         if (entity == null) {
             return null; // or throw an exception if preferred
         }
-        return changeFlowNodeMapper.toDto(entity);
+        return changeFlowNodeMapper.toModel(entity);
     }
 
     @Override
@@ -73,7 +73,7 @@ public class ChangeFlowNodeServiceImpl implements ChangeFlowNodeService {
         if (entity == null) {
             return null; // or throw an exception if preferred
         }
-        return changeFlowNodeMapper.toDto(entity);
+        return changeFlowNodeMapper.toModel(entity);
     }
 
     @Override
@@ -90,7 +90,7 @@ public class ChangeFlowNodeServiceImpl implements ChangeFlowNodeService {
             return List.of(); // or throw an exception if preferred
         }
 
-        return changeFlowNodeMapper.toDtoList(entities);
+        return changeFlowNodeMapper.toModels(entities);
 
     }
 }

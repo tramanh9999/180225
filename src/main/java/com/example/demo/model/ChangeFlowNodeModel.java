@@ -2,18 +2,20 @@ package com.example.demo.model;
 
 import com.example.demo.enums.ChangeFlowNodeType;
 import com.example.demo.enums.NodeType;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 
 /**
  * Model representing a change flow node.
  */
 @Data
 @Builder
+@NoArgsConstructor
 @AllArgsConstructor
-@RequiredArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ChangeFlowNodeModel {
     private Long id;
     private Long changeFlowId;

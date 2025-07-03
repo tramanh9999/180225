@@ -1,8 +1,14 @@
 package com.example.demo.service.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.example.demo.entity.ChangeFlowEntity;
 import com.example.demo.enums.ApprovalResultStatus;
 import com.example.demo.enums.FlowConstants;
+import com.example.demo.enums.HandleType;
+import com.example.demo.enums.NodeType;
+import com.example.demo.mapper.ChangeFlowNodeMapper;
 import com.example.demo.model.*;
 import com.example.demo.repository.ChangeFlowRepository;
 import com.example.demo.service.ChangeFlowNodeService;
@@ -13,9 +19,11 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
-import static com.example.demo.model.ChangeFlowDataParser.createEdgeMapKey;
+import static com.example.demo.enums.FlowConstants.*;
+import static com.example.demo.enums.NodeType.*;
 import static com.example.demo.model.ErrorCodeCommon.UNSUPPORTED_APPROVAL_STATUS;
 
 /**
@@ -26,11 +34,105 @@ import static com.example.demo.model.ErrorCodeCommon.UNSUPPORTED_APPROVAL_STATUS
 public class FlowManagementServiceImpl implements FlowManagementService {
 
     public static final String FLOW_DATA_CACHE = "flowDataCache";
+    private static final String KEY_DELIMITER = "::";
+    @Autowired
+    ChangeFlowNodeMapper changeFlowNodeMapper;
     @Autowired
     private ChangeFlowRepository changeFlowRepository; // Assume you have this repository
     @Autowired
     private ChangeFlowNodeService changeFlowNodeService;
 
+    /**
+     * Parse a JSON string into a list of FlowNodeModel objects.
+     *
+     * @param jsonString the JSON string to parse
+     * @return a list of FlowNodeModel objects, or an empty list if parsing fails
+     */
+    public static List<FlowNodeModel> parseFlowNodesFromJson(String jsonString) {
+        if (jsonString == null || jsonString.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+        try {
+            return JSON.parseObject(jsonString, new TypeReference<>() {
+            });
+        } catch (Exception e) {
+            log.error("Error parsing JSON string to List<FlowNodeModel> using Fastjson: {}",
+                    e.getMessage(), e);
+            return Collections.emptyList();
+        }
+    }
+
+    /**
+     * Convert a list of FlowNodeModel objects to a JSON string.
+     *
+     * @param nodeModels the list of FlowNodeModel objects
+     * @return the JSON string representation, or null if conversion fails
+     */
+    public static String convertFlowNodesModelListToJson(List<FlowNodeModel> nodeModels) {
+        try {
+            return JSON.toJSONString(nodeModels, SerializerFeature.PrettyFormat);
+        } catch (Exception e) {
+            log.error("Error converting List<FlowNodeModel> to JSON string using Fastjson: {}",
+                    e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Convert a list of FlowEdgeModel objects to a JSON string.
+     *
+     * @param edgeModels the list of FlowEdgeModel objects
+     * @return the JSON string representation, or null if conversion fails
+     */
+    public static String convertFlowEdgesModelListToJson(List<FlowEdgeModel> edgeModels) {
+        try {
+            return JSON.toJSONString(edgeModels, SerializerFeature.PrettyFormat);
+        } catch (Exception e) {
+            log.error("Error converting List<FlowEdgeModel> to JSON string using Fastjson: {}",
+                    e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Create a unique mapKey from the source node ID and source handle ID.
+     *
+     * @param sourceHandleId ID of the source handle (e.g., "Accept-output", "0-output").
+     * @return The generated mapKey string.
+     * @throws IllegalArgumentException if sourceNodeId or sourceHandleId is null or empty.
+     */
+    public static String createEdgeMapKey(String sourceHandleId) {
+        return sourceHandleId;
+    }
+
+    /**
+     * Parses the NodeType from a given node ID string (e.g., "APPROVAL_NODE-1750059604667").
+     * This method is intended for actual node IDs.
+     *
+     * @param nodeId The ID string of the node.
+     * @return The corresponding NodeType, or NodeType.UNKNOWN if no match is found.
+     */
+    public static NodeType parseTypeFromNodeId(String nodeId) {
+        if (nodeId == null || nodeId.isEmpty()) {
+            return UNKNOWN;
+        }
+
+        if (nodeId.equalsIgnoreCase(START.getValue())) {
+            return START;
+        }
+        if (nodeId.equalsIgnoreCase(END.getValue())) {
+            return END;
+        }
+        for (NodeType type : NodeType.values()) {
+            if (type == START || type == END || type == UNKNOWN) {
+                continue;
+            }
+            if (nodeId.startsWith(type.getValue() + "-")) {
+                return type;
+            }
+        }
+        return UNKNOWN;
+    }
 
     /**
      * Create a Map for fast lookup of FlowEdgeModel by source node ID and source handle ID.
@@ -56,7 +158,6 @@ public class FlowManagementServiceImpl implements FlowManagementService {
         return edgeMap;
     }
 
-
     @Override
     public IndexedChangeFlowDataModel getFlowDataByChangeFlowId(Long changeFlowId) {
         log.info("Fetching flow data from database for ID: {}", changeFlowId);
@@ -76,10 +177,13 @@ public class FlowManagementServiceImpl implements FlowManagementService {
             Map<String, ChangeFlowNodeModel> indexedNodes = changeFlowNodes.stream().collect(
                     Collectors.toMap(ChangeFlowNodeModel::getNodeId, node -> node,
                             (existing, replacement) -> existing));
+            //log nodes
+            log.info("Indexed {} nodes for ChangeFlow ID: {}", indexedNodes.size(), changeFlowId);
             if (flowEdgesJson != null && !flowEdgesJson.trim().isEmpty()) {
-                List<FlowEdgeModel> rawEdges =
-                        ChangeFlowDataParser.parseFlowEdgesFromJson(flowEdgesJson, indexedNodes);
+                List<FlowEdgeModel> rawEdges = parseFlowEdgesFromJson(flowEdgesJson, indexedNodes);
                 indexedEdgesBySourceAndHandle = createFastLookupEdgeMap(rawEdges);
+                log.info("Indexed {} edges for ChangeFlow ID: {}",
+                        indexedEdgesBySourceAndHandle.size(), changeFlowId);
             }
 
             return new IndexedChangeFlowDataModel(indexedEdgesBySourceAndHandle, indexedNodes);
@@ -108,10 +212,10 @@ public class FlowManagementServiceImpl implements FlowManagementService {
         if (optionalEntity.isPresent()) {
             ChangeFlowEntity entity = optionalEntity.get();
 
-            String flowNodesJson = ChangeFlowDataParser.convertFlowNodesModelListToJson(nodes);
+            String flowNodesJson = convertFlowNodesModelListToJson(nodes);
             entity.setFlowNodes(flowNodesJson);
 
-            String flowEdgesJson = ChangeFlowDataParser.convertFlowEdgesModelListToJson(edges);
+            String flowEdgesJson = convertFlowEdgesModelListToJson(edges);
             entity.setFlowEdges(flowEdgesJson);
 
             ChangeFlowEntity updatedEntity = changeFlowRepository.save(entity);
@@ -121,7 +225,6 @@ public class FlowManagementServiceImpl implements FlowManagementService {
         log.error("ChangeFlowEntity not found with id: {}", changeFlowId);
         throw new BusinessException(ErrorCodeCommon.CHANGE_FLOW_NOT_FOUND, changeFlowId);
     }
-
 
     /**
      * Finds the current FlowNode and potential next FlowNode(s) based on
@@ -139,7 +242,6 @@ public class FlowManagementServiceImpl implements FlowManagementService {
         Map<String, FlowEdgeModel> indexedEdges = flowDataModel.getIndexedEdges();
         return indexedEdges.get(edgeLookupKey);
     }
-
 
     @Override
     public String buildHandleOutputIdForApprovalAction(Long currentApprovalNodeId,
@@ -159,6 +261,139 @@ public class FlowManagementServiceImpl implements FlowManagementService {
         }
         return result;
     }
+
+    /**
+     * Parse a JSON string into a list of FlowEdgeModel objects.
+     *
+     * @param jsonString   the JSON string to parse
+     * @param indexedNodes
+     * @return a list of FlowEdgeModel objects, or an empty list if parsing fails
+     */
+    public List<FlowEdgeModel> parseFlowEdgesFromJson(String jsonString,
+                                                      Map<String, ChangeFlowNodeModel> indexedNodes) {
+        if (jsonString == null || jsonString.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+        try {
+            List<FlowEdgeRawModel> flowEdgeRawModels =
+                    JSON.parseObject(jsonString, new TypeReference<>() {
+                    });
+            // Convert raw edges to FlowEdgeModel using the provided indexed nodes
+            return flowEdgeRawModels.stream()
+                    .map(rawEdge -> fromSimpleFlowEdge(rawEdge, indexedNodes)).toList();
+        } catch (Exception e) {
+            log.error("Error parsing JSON string to List<FlowEdgeModel> using Fastjson: {}",
+                    e.getMessage(), e);
+            return Collections.emptyList();
+        }
+    }
+
+    public ParsedNodeHandleModel parseHandleString(String handleString, NodeType nodeType) {
+
+
+        if (START.equals(nodeType)) {
+            handleString = FlowConstants.START_NODE_SOURCE_HANDLE_ID;
+        }
+        if (handleString == null || handleString.isEmpty()) {
+            return new ParsedNodeHandleModel(null, null, null, null, ApprovalResultStatus.UNKNOWN);
+        }
+
+        ParsedNodeHandleModel parsedHandle = new ParsedNodeHandleModel();
+        parsedHandle.setRawHandleId(handleString);
+        parsedHandle.setType(HandleType.fromHandleIdString(handleString));
+
+        Matcher numericMatcher = CHANGE_STATUS_ID_HANDLE_PATTERN.matcher(handleString);
+        Matcher customApprovalMatcher = NODE_APPROVAL_HANDLE_PATTERN.matcher(handleString);
+        Matcher nodeMatcher = NODE_ID_HANDLE_PATTERN.matcher(handleString);
+
+        if (numericMatcher.matches()) {
+            try {
+                parsedHandle.setChangeStatusId(Long.parseLong(numericMatcher.group(
+                        CHANGE_STATUS_ID_HANDLE_PATTERN__CHANGE_STATUS_ID_INDEX)));
+            } catch (NumberFormatException e) {
+                log.error("Failed to parse change status ID from numeric handle: '{}'. Error: {}",
+                        handleString, e.getMessage());
+            }
+        } else if (customApprovalMatcher.matches()) {
+//            String nodeIdPart =
+//                    customApprovalMatcher.group(NODE_APPROVAL_HANDLE_PATTERN__NODE_ID_INDEX);
+//            parsedHandle.setNodeId(nodeIdPart);
+            parsedHandle.setApprovedAction(ApprovalResultStatus.fromValue(
+                            customApprovalMatcher.group(
+                                    NODE_APPROVAL_HANDLE_PATTERN__NODE_APPROVAL_ACTION_INDEX))
+                    .orElse(ApprovalResultStatus.UNKNOWN));
+        } else if (nodeMatcher.matches()) {
+//            String nodeIdPart = nodeMatcher.group(NODE_ID_HANDLE_PATTERN__NODE_ID_INDEX);
+//            parsedHandle.setNodeId(nodeIdPart);
+            parsedHandle.setType(nodeMatcher.group(NODE_ID_HANDLE_PATTERN__HANDLE_TYPE_INDEX)
+                    .equalsIgnoreCase(FlowConstants.INPUT_KEYWORD) ? HandleType.INPUT :
+                    HandleType.OUTPUT);
+        } else {
+            log.debug("Handle string '{}' did not match any known patterns. " +
+                    "Type remains as determined by fromHandleIdString or defaulted.", handleString);
+            throw new BusinessException(ErrorCodeCommon.INVALID_HANDLE_FORMAT, handleString);
+        }
+
+        return parsedHandle;
+    }
+
+    /**
+     * Converts a simple FlowEdgeRawModel to a FlowEdgeModel.
+     * This method is used to convert raw edge data into a model that includes parsed handles.
+     *
+     * @param rawEdge the raw edge data to convert
+     * @return a FlowEdgeModel with parsed handles
+     */
+    public FlowEdgeModel fromSimpleFlowEdge(FlowEdgeRawModel rawEdge,
+                                            Map<String, ChangeFlowNodeModel> indexedNodes) {
+        FlowEdgeModel model = new FlowEdgeModel();
+        model.setId(rawEdge.getId());
+        model.setSourceNodeModel(changeFlowNodeMapper.cloneModel(
+                indexedNodes.getOrDefault(rawEdge.getSource(), new ChangeFlowNodeModel())));
+        ChangeFlowNodeModel sourceNode = model.getSourceNodeModel();
+        sourceNode.setParsedType(parseTypeFromNodeId(rawEdge.getSource()));
+        sourceNode.setParsedHandle(
+                parseHandleString(rawEdge.getSourceHandle(), sourceNode.getParsedType()));
+
+        model.setTargetNodeModel(
+                changeFlowNodeMapper.cloneModel(indexedNodes.get(rawEdge.getTarget())));
+        // check if the target node found then set parsed type = NodeType.parseTypeFromNodeId(rawEdge.getTarget())
+        var targetNode = model.getTargetNodeModel();
+        if (targetNode != null) {
+            targetNode.setParsedType(parseTypeFromNodeId(rawEdge.getTarget()));
+            targetNode.setParsedHandle(
+                    parseHandleString(rawEdge.getTargetHandle(), targetNode.getParsedType()));
+        }
+
+        return model;
+    }
+
+//    /**
+//     * Attempts to determine the NodeType based on a given node *handle ID* string.
+//     * This is primarily possible for custom handle IDs that embed the node's ID.
+//     *
+//     * @param nodeHandleId The ID string of the handle (e.g., "APPROVAL_NODE-ABC-Accept-output", "0-output").
+//     * @return The corresponding NodeType if the node ID can be extracted and matched,
+//     * otherwise NodeType.UNKNOWN if it's a generic handle or doesn't match a pattern.
+//     */
+//    public static NodeType parseTypeFromNodeHandleId(String nodeHandleId) {
+//        if (nodeHandleId == null || nodeHandleId.isEmpty()) {
+//            return UNKNOWN;
+//        }
+//
+//        Matcher matcher = NODE_APPROVAL_HANDLE_PATTERN.matcher(nodeHandleId);
+//        if (matcher.matches()) {
+//            String nodeIdPart = matcher.group(1);
+//            return parseTypeFromNodeId(nodeIdPart);
+//        }
+//        if (nodeHandleId.startsWith(START.getValue())) {
+//            return START;
+//        }
+//        if (nodeHandleId.startsWith(END.getValue())) {
+//            return END;
+//        }
+//        return UNKNOWN;
+//    }
 
 
 }

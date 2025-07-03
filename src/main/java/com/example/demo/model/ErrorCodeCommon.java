@@ -142,8 +142,6 @@ public class ErrorCodeCommon {
             new ErrorCodeCommon("CHANGE_FLOW_NODES_NOT_FOUND",
                     "Change flow nodes not found for the given change flow ID : {0}.",
                     HttpStatus.NOT_FOUND);
-    ;
-
 
     private final String code;
     private final String message;

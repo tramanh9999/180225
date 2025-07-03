@@ -14,15 +14,6 @@ import java.util.List;
 @Component
 public interface ChangeFlowNodeMapper {
 
-
-    /**
-     * Convert a ChangeFlowNodeEntity to a ChangeFlowNodeModel.
-     *
-     * @param entity the entity to convert
-     * @return the converted model
-     */
-    ChangeFlowNodeModel toDto(ChangeFlowNodeEntity entity);
-
     /**
      * Convert a list of ChangeFlowNodeEntity to a list of ChangeFlowNodeModel.
      *
@@ -34,4 +25,7 @@ public interface ChangeFlowNodeMapper {
     ChangeFlowNodeModel cloneModel(ChangeFlowNodeModel model);
 
 
+    List<ChangeFlowNodeModel> toModels(List<ChangeFlowNodeEntity> entities);
+
+    ChangeFlowNodeModel toModel(ChangeFlowNodeEntity entity);
 }

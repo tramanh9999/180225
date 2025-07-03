@@ -56,11 +56,21 @@ public interface ChangeRequestService {
     ChangeRequestModel processChangeRequestCoordinatorTransition(Long changeRequestId,
                                                                  ChangeProcessModel changeStatusId);
 
+
+    @Transactional
+    void handleNextNodeStage(ChangeRequestEntity changeRequest, ChangeFlowNodeModel currentNode,
+                             ChangeFlowNodeModel nextNode, IndexedChangeFlowDataModel flowData);
+
     @Transactional
     void recursiveProcessChangeRequestTransition(ChangeRequestEntity changeRequest,
                                                  FlowEdgeModel edgeModel,
                                                  IndexedChangeFlowDataModel flowData);
 
+
+    void handleNextNodeIsApprovalNodeButAllAccepted(ChangeRequestEntity changeRequest,
+                                                    ChangeFlowNodeModel currentNode,
+                                                    ChangeFlowNodeModel nextNode,
+                                                    IndexedChangeFlowDataModel flowData);
 
     void handleCreateApprovalRequests(Long changeRequestId, Long changeTemplateId,
                                       List<ChangeRequestRoleUserModel> remainTobeCreateApprovalRequestForRoleUser);

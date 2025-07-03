@@ -248,6 +248,10 @@ public class ChangeRequestRoleServiceImpl implements ChangeRequestRoleService {
                 findAllChangeFlowNodesByChangeTemplateIdOrRequestId(changeTemplateId,
                         changeRequestId);
 
+        if (roleList.isEmpty()) {
+            throw new BusinessException(ErrorCodeCommon.CHANGE_REQUEST_ROLE_NOT_CONFIGURED,
+                    changeTemplateId);
+        }
         ChangeRequestRoleModel changeRole = roleList.stream()
                 .filter(role -> changeFlowNodeId.equals(role.getChangeFlowNode().getId()))
                 .findFirst().orElseThrow(

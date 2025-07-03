@@ -1,10 +1,8 @@
 package com.example.demo.repository;
 
 import com.example.demo.entity.ChangeRequestApprovalEntity;
-import com.example.demo.model.ChangeRequestApprovalModel;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Collection;
 import java.util.List;
 
 
@@ -24,6 +22,6 @@ public interface ChangeRequestApprovalRepository
     List<ChangeRequestApprovalEntity> findByChangeRequestIdAndOverallStatus(Long changeRequestId,
                                                                             String status);
 
-    List<ChangeRequestApprovalModel> findByChangeRequestRoleUserIdIn(
-            Collection<Long> changeRequestRoleUserIds);
+    List<ChangeRequestApprovalEntity> findByChangeRequestRoleUserIdIn(
+            List<Long> changeRequestRoleUserIds);
 }

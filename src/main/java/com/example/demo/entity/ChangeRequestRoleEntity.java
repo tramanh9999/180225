@@ -18,9 +18,6 @@ public class ChangeRequestRoleEntity extends BaseEntity<Long> {
     @Column(name = "CHANGE_REQUEST_WORKFLOW_ID")
     private Long changeRequestWorkflowId;
 
-    @Column(name = "CAB_GROUP")
-    private Integer cabGroup;
-
     @Column(name = "CHANGE_REQUEST_ID")
     private Long changeRequestId;
 
