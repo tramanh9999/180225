@@ -32,15 +32,6 @@ public interface FlowManagementService {
      */
     IndexedChangeFlowDataModel getFlowDataByChangeFlowId(Long changeFlowId);
 
-    /**
-     * Create approval node handle id from node id and status string.
-     *
-     * @param currentApprovalNodeId the current approval node id
-     * @param status                the status
-     * @return the string
-     */
-    String buildHandleOutputIdForApprovalAction(Long currentApprovalNodeId,
-                                                ApprovalResultStatus status);
 
     @CacheEvict(value = FlowManagementServiceImpl.FLOW_DATA_CACHE,
             key = "'CHANGE_FLOW_' + #changeFlowId")
@@ -56,4 +47,6 @@ public interface FlowManagementService {
      */
     FlowEdgeModel getOrDefaultEdgeByNodeHandleId(String currentChangeFlowNodeHandleId,
                                                  IndexedChangeFlowDataModel flowData);
+
+    String buildHandleOutputIdForApprovalAction(String nodeId, ApprovalResultStatus status);
 }

@@ -18,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.example.demo.service.impl.FlowManagementServiceImpl.createEdgeMapKey;
 
@@ -67,15 +69,21 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
 
         var changeRequestApproval = approvalData.getChangeRequestApproval();
         changeRequestApproval.setOverallStatus(replyModel.getStatus());
-        changeRequestApproval.setOverallUsername(replyModel.getApprovedUser());
+        changeRequestApproval.setOverallUsername(getUserName());
 
         changeRequestApprovalService.save(changeRequestApproval);
 
-        ChangeRequestApprovalResultModel resultModel = ChangeRequestApprovalResultModel.builder()
-                .changeRequestApprovalId(replyModel.getChangeRequestApprovalId())
-                .approvedUser(changeRequestApproval.getOverallUsername())
-                .comment(replyModel.getComment()).status(replyModel.getStatus()).build();
-        changeRequestApprovalResultService.createResult(resultModel);
+        ChangeRequestApprovalResultModel historyApproval =
+                ChangeRequestApprovalResultModel.builder()
+                        .changeRequestApprovalId(replyModel.getChangeRequestApprovalId())
+                        .approvedUser(changeRequestApproval.getOverallUsername())
+                        .replyComment(replyModel.getReplyComment()).status(replyModel.getStatus())
+                        .build();
+        changeRequestApprovalResultService.createResult(historyApproval);
+
+        log.info("Processing approval reply for Change Request ID: {} with status: {}",
+                approvalData.getChangeRequest().getId(), replyModel.getStatus());
+
 
         recursiveProcessChangeRequestTransition(approvalData.getChangeRequest(),
                 currentChangeFlowEdge, approvalData.getFlowData());
@@ -117,6 +125,8 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
             throw new BusinessException(ErrorCodeCommon.CHANGE_TEMPLATE_NOT_FOUND,
                     changeTemplateId);
         }
+
+
         var changeFlowId = changeTemplateModel.getChangeFlowId();
         if (changeFlowId == null) {
             throw new BusinessException(ErrorCodeCommon.CHANGE_FLOW_CONFIGURATION_ERROR,
@@ -124,6 +134,27 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
         }
 
         var indexedChangeFlowData = flowManagementService.getFlowDataByChangeFlowId(changeFlowId);
+        var changeRole =
+                changeRequestRoleService.getChangeRequestRoleByChangeFlowNodeId(changeRequestId,
+                        cr.getChangeTemplateId(), cr.getChangeFlowNodeId());
+
+        //filter the indexed nodes to find the current change flow node
+
+        var currentNodeStream = indexedChangeFlowData.getIndexedNodes().values().stream()
+                .filter(node -> Objects.equals(node.getId(), cr.getChangeFlowNodeId())).findFirst()
+                .orElseThrow(
+                        () -> new BusinessException(ErrorCodeCommon.CHANGE_FLOW_NODES_NOT_FOUND,
+                                cr.getChangeFlowNodeNodeId()));
+
+        String currentNodeHandleId = flowManagementService.buildHandleOutputIdForApprovalAction(
+                currentNodeStream.getNodeId(), replyModel.getStatus());
+
+        if (!indexedChangeFlowData.getIndexedEdges()
+                .containsKey(createEdgeMapKey(currentNodeHandleId))) {
+            throw new BusinessException(ErrorCodeCommon.CHANGE_REQUEST_APPROVAL_UNREPLIABLE,
+                    replyModel.getStatus(), approvalId, changeRole.getChangeFlowNode().getName());
+        }
+
 
 
 
@@ -135,19 +166,8 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
          */
 
 
-        String currentNodeHandleId =
-                flowManagementService.buildHandleOutputIdForApprovalAction(cr.getChangeFlowNodeId(),
-                        replyModel.getStatus());
-
-        if (!indexedChangeFlowData.getIndexedEdges()
-                .containsKey(createEdgeMapKey(currentNodeHandleId))) {
-            throw new BusinessException(ErrorCodeCommon.FLOW_TRANSITION_NOT_FOUND,
-                    currentNodeHandleId, changeFlowId);
-        }
         // get current role of logged user.
-        var changeRole =
-                changeRequestRoleService.getChangeRequestRoleByChangeFlowNodeId(changeFlowId,
-                        changeRequestId, cr.getChangeFlowNodeId());
+
         String currentUser = getUserName();
 
         //get current change request role user by current user and
@@ -158,6 +178,66 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
         return FlowTransitionDetail.builder().changeRequest(cr).changeFlowId(changeFlowId)
                 .currentChangeFlowNodeHandleId(currentNodeHandleId).changeRole(changeRole)
                 .changeRequestApproval(approvalModel).flowData(indexedChangeFlowData).build();
+    }
+
+
+    /**
+     * Filters a list of WorkflowUsers (assumed to be sorted by userOrder)
+     * to find records with REJECT or PENDING status that are:
+     * 1. After the latest ACCEPT record.
+     * 2. Before the earliest NULL_STATUS record.
+     *
+     * @param sortedUsersInGroup A list of WorkflowUser objects, already sorted by userOrder.
+     * @return A list of WorkflowUser objects matching the criteria.
+     */
+    public List<ChangeRequestRoleUserModel> filterPendingOrRejectInWindow(
+            List<ChangeRequestRoleUserModel> sortedUsersInGroup) {
+        if (sortedUsersInGroup == null || sortedUsersInGroup.isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+
+        // Find the userOrder of the latest ACCEPT record
+        // We initialize with -1 to ensure any valid order (0 or positive) will be greater
+        int latestAcceptOrder = -1;
+        Optional<ChangeRequestRoleUserModel> latestAcceptUser = sortedUsersInGroup.stream()
+                .filter(user -> user.getApprovalModel() != null &&
+                        ApprovalResultStatus.ACCEPT.equals(
+                                user.getApprovalModel().getOverallStatus()))
+                .max(Comparator.comparingInt(
+                        ChangeRequestRoleUserModel::getCabGroupOrder)); // Find max
+        // order among ACCEPTS
+
+        if (latestAcceptUser.isPresent()) {
+            latestAcceptOrder = latestAcceptUser.get().getCabGroupOrder();
+        }
+
+        // Find the userOrder of the earliest NULL_STATUS record
+        // We initialize with Integer.MAX_VALUE to ensure any valid order will be smaller
+        int earliestNullStatusOrder = Integer.MAX_VALUE;
+        Optional<ChangeRequestRoleUserModel> earliestNullStatusUser =
+                sortedUsersInGroup.stream().filter(user -> user.getApprovalModel() == null)
+                        .min(Comparator.comparingInt(
+                                ChangeRequestRoleUserModel::getCabGroupOrder)); // Find min
+        // order among NULL_STATUS
+
+        if (earliestNullStatusUser.isPresent()) {
+            earliestNullStatusOrder = earliestNullStatusUser.get().getCabGroupOrder();
+        }
+
+        // Filter users that are REJECT or PENDING and fall within the defined window
+        final int finalLatestAcceptOrder = latestAcceptOrder;
+        final int finalEarliestNullStatusOrder = earliestNullStatusOrder;
+
+        return sortedUsersInGroup.stream().filter(user -> (user.getApprovalModel() != null &&
+                        (ApprovalResultStatus.REJECT.equals(user.getApprovalModel().getOverallStatus()) ||
+                                ApprovalResultStatus.PENDING_APPROVAL.equals(
+                                        user.getApprovalModel().getOverallStatus()))))
+                .filter(user -> user.getCabGroupOrder() >
+                        finalLatestAcceptOrder) // Must be after the
+                // latest ACCEPT
+                .filter(user -> user.getCabGroupOrder() <
+                        finalEarliestNullStatusOrder) // Must be before the earliest NULL_STATUS
+                .collect(Collectors.toList());
     }
 
 
@@ -213,7 +293,7 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
         var indexedChangeFlowData = flowManagementService.getFlowDataByChangeFlowId(changeFlowId);
         if (!indexedChangeFlowData.getIndexedEdges()
                 .containsKey(createEdgeMapKey(currentChangeFlowNodeHandleId))) {
-            throw new BusinessException(ErrorCodeCommon.FLOW_TRANSITION_NOT_FOUND,
+            throw new BusinessException(ErrorCodeCommon.CHANGE_REQUEST_APPROVAL_UNREPLIABLE,
                     currentChangeFlowNodeHandleId, changeFlowId);
         }
         return FlowTransitionDetail.builder().changeFlowId(changeFlowId).changeRequest(cr)
@@ -311,7 +391,8 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
             //check approvalList empty or all users accepted
 
             boolean allUserAccepted = !approvalList.isEmpty() && approvalList.stream().noneMatch(
-                    approval -> ApprovalResultStatus.ACCEPT != approval.getOverallStatus());
+                    approval -> approval == null || !Objects.equals(ApprovalResultStatus.ACCEPT,
+                            approval.getOverallStatus()));
             if (allUserAccepted) {
                 continueProcessAcceptedApprovalNode(changeRequest, previousNode, currentNode,
                         flowData);
@@ -339,9 +420,18 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
                                                     IndexedChangeFlowDataModel flowData) {
         Long currentNodeId = currentNode.getId();
         // auto recursiveProcessChangeRequestTransition by Accept output handle
-        var currentAcceptHandleOutputId =
-                flowManagementService.buildHandleOutputIdForApprovalAction(currentNodeId,
-                        ApprovalResultStatus.ACCEPT);
+
+        var currentNodeStream = flowData.getIndexedNodes().values().stream()
+                .filter(node -> Objects.equals(node.getId(), currentNodeId)).findFirst()
+                .orElseThrow(
+                        () -> new BusinessException(ErrorCodeCommon.CHANGE_FLOW_NODES_NOT_FOUND,
+                                currentNodeId));
+
+        String currentAcceptHandleOutputId =
+                flowManagementService.buildHandleOutputIdForApprovalAction(
+                        currentNodeStream.getNodeId(), ApprovalResultStatus.ACCEPT);
+
+
         var currentEdge =
                 flowManagementService.getOrDefaultEdgeByNodeHandleId(currentAcceptHandleOutputId,
                         flowData);
@@ -459,5 +549,7 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
                         .overallStatus(ApprovalResultStatus.PENDING_APPROVAL)
                         .changeRequestRoleUserId(user.getId()).build()).toList();
         changeRequestApprovalService.saveList(approvalList);
+        // lich su
+
     }
 }

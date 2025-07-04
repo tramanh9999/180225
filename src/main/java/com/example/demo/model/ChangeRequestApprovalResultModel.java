@@ -18,5 +18,5 @@ public class ChangeRequestApprovalResultModel extends BaseModel {
     private Long changeRequestApprovalId;
     private String approvedUser;
     private ApprovalResultStatus status;
-    private String comment;
+    private String replyComment;
 }

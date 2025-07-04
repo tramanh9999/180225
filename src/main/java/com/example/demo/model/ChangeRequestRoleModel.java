@@ -20,9 +20,6 @@ public class ChangeRequestRoleModel extends BaseModel {
     private List<ChangeRequestRoleUserModel> users;
 
     private ChangeFlowNodeModel changeFlowNode;
-
-    private List<ChangeRequestRoleUserModel> cabUserGroups;
-
     // moi
     private List<ChangeRequestRoleUserWorkflowListModel> workflows;
 }

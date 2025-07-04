@@ -96,9 +96,11 @@ public class ErrorCodeCommon {
             new ErrorCodeCommon("2007", "Unsupported approval status for transition: {0}.",
                     HttpStatus.BAD_REQUEST);
 
-    public static final ErrorCodeCommon FLOW_TRANSITION_NOT_FOUND = new ErrorCodeCommon("2008",
-            "No valid transition found from handle ID: {0} with exit handle: {1} for Change Flow ID: {2}.",
-            HttpStatus.INTERNAL_SERVER_ERROR); // Indicates a flow configuration issue
+    public static final ErrorCodeCommon CHANGE_REQUEST_APPROVAL_UNREPLIABLE =
+            new ErrorCodeCommon("2008", "Change flow not configured properly. " +
+                    "Unable to {0} approval request id : {1} in role {2}",
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+    // Indicates a flow configuration issue
 
 
     public static final ErrorCodeCommon FLOW_TRANSITION_EDGE_NOT_FOUND = new ErrorCodeCommon("3002",
@@ -145,6 +147,11 @@ public class ErrorCodeCommon {
     public static final ErrorCodeCommon CHANGE_NODE_ID_REQUIRED =
             new ErrorCodeCommon("CHANGE_NODE_ID_REQUIRED",
                     "Change node ID must not be null or empty", HttpStatus.BAD_REQUEST);
+    public static final ErrorCodeCommon CHANGE_REQUEST_USER_NOT_ALLOWED =
+            new ErrorCodeCommon("CHANGE_REQUEST_USER_NOT_ALLOWED",
+                    "Current user is not allowed to perform this action on approval request ID: {0}",
+                    HttpStatus.FORBIDDEN);
+
 
     private final String code;
     private final String message;

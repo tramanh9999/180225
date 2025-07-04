@@ -33,7 +33,7 @@ public class ChangeRequestApprovalResultEntity {
     @Enumerated(EnumType.STRING)
     private ApprovalResultStatus status;
 
-    @Column(name = "COMMENT", length = 1000)
-    private String comment;
+    @Column(name = "REPLY_COMMENT", length = 1000)
+    private String replyComment;
 
 }

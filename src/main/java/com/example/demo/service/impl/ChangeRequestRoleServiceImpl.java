@@ -343,7 +343,7 @@ public class ChangeRequestRoleServiceImpl implements ChangeRequestRoleService {
 
 
         for (ChangeRequestRoleModel item : items) {
-            List<ChangeRequestRoleUserModel> cabUsers = item.getCabUserGroups();
+            List<ChangeRequestRoleUserModel> cabUsers = item.getUsers();
             if (cabUsers == null || cabUsers.isEmpty()) {
                 item.setWorkflows(Collections.emptyList());
                 continue;
@@ -367,6 +367,8 @@ public class ChangeRequestRoleServiceImpl implements ChangeRequestRoleService {
                 List<ChangeRequestRoleUserModel> usersInCurrentWorkflow = workflowEntry.getValue();
 
                 Map<Integer, List<ChangeRequestRoleUserModel>> groupedByCabGroup = new TreeMap<>();
+
+                //add logic handle null cab group, i want group null cab group to cab group 0
 
                 groupedByCabGroup = usersInCurrentWorkflow.stream().collect(
                         Collectors.groupingBy(ChangeRequestRoleUserModel::getCabGroup,

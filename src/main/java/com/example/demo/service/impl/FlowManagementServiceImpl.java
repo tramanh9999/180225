@@ -43,26 +43,6 @@ public class FlowManagementServiceImpl implements FlowManagementService {
     private ChangeFlowNodeService changeFlowNodeService;
 
     /**
-     * Parse a JSON string into a list of FlowNodeModel objects.
-     *
-     * @param jsonString the JSON string to parse
-     * @return a list of FlowNodeModel objects, or an empty list if parsing fails
-     */
-    public static List<FlowNodeModel> parseFlowNodesFromJson(String jsonString) {
-        if (jsonString == null || jsonString.trim().isEmpty()) {
-            return Collections.emptyList();
-        }
-        try {
-            return JSON.parseObject(jsonString, new TypeReference<>() {
-            });
-        } catch (Exception e) {
-            log.error("Error parsing JSON string to List<FlowNodeModel> using Fastjson: {}",
-                    e.getMessage(), e);
-            return Collections.emptyList();
-        }
-    }
-
-    /**
      * Convert a list of FlowNodeModel objects to a JSON string.
      *
      * @param nodeModels the list of FlowNodeModel objects
@@ -244,18 +224,17 @@ public class FlowManagementServiceImpl implements FlowManagementService {
     }
 
     @Override
-    public String buildHandleOutputIdForApprovalAction(Long currentApprovalNodeId,
-                                                       ApprovalResultStatus status) {
+    public String buildHandleOutputIdForApprovalAction(String nodeId, ApprovalResultStatus status) {
 
         String result;
-        if (currentApprovalNodeId == null) {
+        if (nodeId == null) {
             return FlowConstants.START_NODE_SOURCE_HANDLE_ID;
         }
 
         if (ApprovalResultStatus.ACCEPT == status) {
-            result = currentApprovalNodeId + "-Accept-output";
+            result = nodeId + "-Accept-output";
         } else if (ApprovalResultStatus.REJECT == status) {
-            result = currentApprovalNodeId + "-Reject-output";
+            result = nodeId + "-Reject-output";
         } else {
             throw new BusinessException(UNSUPPORTED_APPROVAL_STATUS, status);
         }
@@ -315,16 +294,11 @@ public class FlowManagementServiceImpl implements FlowManagementService {
                         handleString, e.getMessage());
             }
         } else if (customApprovalMatcher.matches()) {
-//            String nodeIdPart =
-//                    customApprovalMatcher.group(NODE_APPROVAL_HANDLE_PATTERN__NODE_ID_INDEX);
-//            parsedHandle.setNodeId(nodeIdPart);
             parsedHandle.setApprovedAction(ApprovalResultStatus.fromValue(
                             customApprovalMatcher.group(
                                     NODE_APPROVAL_HANDLE_PATTERN__NODE_APPROVAL_ACTION_INDEX))
                     .orElse(ApprovalResultStatus.UNKNOWN));
         } else if (nodeMatcher.matches()) {
-//            String nodeIdPart = nodeMatcher.group(NODE_ID_HANDLE_PATTERN__NODE_ID_INDEX);
-//            parsedHandle.setNodeId(nodeIdPart);
             parsedHandle.setType(nodeMatcher.group(NODE_ID_HANDLE_PATTERN__HANDLE_TYPE_INDEX)
                     .equalsIgnoreCase(FlowConstants.INPUT_KEYWORD) ? HandleType.INPUT :
                     HandleType.OUTPUT);
@@ -367,33 +341,5 @@ public class FlowManagementServiceImpl implements FlowManagementService {
 
         return model;
     }
-
-//    /**
-//     * Attempts to determine the NodeType based on a given node *handle ID* string.
-//     * This is primarily possible for custom handle IDs that embed the node's ID.
-//     *
-//     * @param nodeHandleId The ID string of the handle (e.g., "APPROVAL_NODE-ABC-Accept-output", "0-output").
-//     * @return The corresponding NodeType if the node ID can be extracted and matched,
-//     * otherwise NodeType.UNKNOWN if it's a generic handle or doesn't match a pattern.
-//     */
-//    public static NodeType parseTypeFromNodeHandleId(String nodeHandleId) {
-//        if (nodeHandleId == null || nodeHandleId.isEmpty()) {
-//            return UNKNOWN;
-//        }
-//
-//        Matcher matcher = NODE_APPROVAL_HANDLE_PATTERN.matcher(nodeHandleId);
-//        if (matcher.matches()) {
-//            String nodeIdPart = matcher.group(1);
-//            return parseTypeFromNodeId(nodeIdPart);
-//        }
-//        if (nodeHandleId.startsWith(START.getValue())) {
-//            return START;
-//        }
-//        if (nodeHandleId.startsWith(END.getValue())) {
-//            return END;
-//        }
-//        return UNKNOWN;
-//    }
-
 
 }
