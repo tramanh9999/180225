@@ -1,10 +1,8 @@
 package vn.com.mbbank.kanban.mbamt.server.repository;
 
-import vn.com.mbbank.kanban.mbamt.server.entity.ChangeRequestEntity;
-import com.example.demo.model.*;
 import org.springframework.transaction.annotation.Transactional;
+import vn.com.mbbank.kanban.mbamt.server.entity.ChangeRequestEntity;
 import vn.com.mbbank.kanban.mbamt.server.model.*;
-import vn.com.mbbank.kanban.mbamt.server.demo.model.*;
 
 import java.util.List;
 

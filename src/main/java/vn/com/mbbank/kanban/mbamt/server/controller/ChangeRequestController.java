@@ -1,16 +1,14 @@
 package vn.com.mbbank.kanban.mbamt.server.controller;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import vn.com.mbbank.kanban.mbamt.server.constants.ServerUrl;
-import com.example.demo.model.*;
 import vn.com.mbbank.kanban.mbamt.server.model.*;
-import vn.com.mbbank.kanban.mbamt.server.demo.model.*;
 import vn.com.mbbank.kanban.mbamt.server.repository.ChangeRequestService;
 import vn.com.mbbank.kanban.mbamt.server.service.ChangeRequestRoleService;
 import vn.com.mbbank.kanban.mbamt.server.service.ChangeStatusService;
 import vn.com.mbbank.kanban.mbamt.server.service.FlowManagementService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 

@@ -1,7 +1,10 @@
 package vn.com.mbbank.kanban.mbamt.server.model;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import vn.com.mbbank.kanban.mbamt.server.enums.ApprovalResultStatus;
-import lombok.*;
 
 /**
  * Model representing the result of a change request approval.
@@ -10,9 +13,8 @@ import lombok.*;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@SuperBuilder
+@RequiredArgsConstructor
 public class ChangeRequestApprovalResultModel extends BaseModel {
     private Long id;
     private Long changeRequestApprovalId;

@@ -1,22 +1,18 @@
 package vn.com.mbbank.kanban.mbamt.server.service.impl;
 
-import vn.com.mbbank.kanban.mbamt.server.entity.ChangeTemplateFieldItemEntity;
-import vn.com.mbbank.kanban.mbamt.server.entity.ChangeTemplateRoleEntity;
-import vn.com.mbbank.kanban.mbamt.server.mapper.ChangeTemplateFieldItemMapper;
-import vn.com.mbbank.kanban.mbamt.server.mapper.ChangeTemplateMapper;
-import vn.com.mbbank.kanban.mbamt.server.mapper.ChangeTemplateRoleMapper;
-import com.example.demo.model.*;
-import com.example.demo.repository.*;
-import vn.com.mbbank.kanban.mbamt.server.model.*;
-import vn.com.mbbank.kanban.mbamt.server.repository.*;
-import vn.com.mbbank.kanban.mbamt.server.demo.model.*;
-import vn.com.mbbank.kanban.mbamt.server.demo.repository.*;
-import vn.com.mbbank.kanban.mbamt.server.service.ChangeTemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import vn.com.mbbank.kanban.mbamt.server.entity.ChangeTemplateFieldItemEntity;
+import vn.com.mbbank.kanban.mbamt.server.entity.ChangeTemplateRoleEntity;
+import vn.com.mbbank.kanban.mbamt.server.mapper.ChangeTemplateFieldItemMapper;
+import vn.com.mbbank.kanban.mbamt.server.mapper.ChangeTemplateMapper;
+import vn.com.mbbank.kanban.mbamt.server.mapper.ChangeTemplateRoleMapper;
+import vn.com.mbbank.kanban.mbamt.server.model.*;
+import vn.com.mbbank.kanban.mbamt.server.repository.*;
+import vn.com.mbbank.kanban.mbamt.server.service.ChangeTemplateService;
 
 import java.util.List;
 import java.util.Map;

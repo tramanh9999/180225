@@ -1,14 +1,12 @@
 package vn.com.mbbank.kanban.mbamt.server.service.impl;
 
-import vn.com.mbbank.kanban.mbamt.server.entity.RoleGroupEntity;
-import vn.com.mbbank.kanban.mbamt.server.entity.SysUserEntity;
-import com.example.demo.repository.*;
-import vn.com.mbbank.kanban.mbamt.server.repository.*;
-import vn.com.mbbank.kanban.mbamt.server.demo.repository.*;
-import vn.com.mbbank.kanban.mbamt.server.service.SysRolePermissionService;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import vn.com.mbbank.kanban.mbamt.server.entity.RoleGroupEntity;
+import vn.com.mbbank.kanban.mbamt.server.entity.SysUserEntity;
+import vn.com.mbbank.kanban.mbamt.server.repository.*;
+import vn.com.mbbank.kanban.mbamt.server.service.SysRolePermissionService;
 
 import java.util.HashSet;
 import java.util.List;
