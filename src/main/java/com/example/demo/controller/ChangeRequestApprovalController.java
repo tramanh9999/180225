@@ -1,7 +1,9 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.ChangeRequestApprovalModel;
+import com.example.demo.model.ChangeStatusModel;
 import com.example.demo.service.ChangeRequestApprovalService;
+import com.example.demo.service.ChangeStatusService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,10 @@ public class ChangeRequestApprovalController {
 
     @Autowired
     private ChangeRequestApprovalService approvalService;
+
+
+    @Autowired
+    private ChangeStatusService changeStatusService;
 
     @GetMapping
     public ResponseEntity<List<ChangeRequestApprovalModel>> getAllApprovals() {
@@ -54,6 +60,15 @@ public class ChangeRequestApprovalController {
         return new ResponseEntity<>(updatedApproval, HttpStatus.OK);
     }
 
+
+    // api find all status in same stage with input status id
+    @GetMapping("/{statusId}/related-statuses")
+    public ResponseEntity<List<ChangeStatusModel>> getApprovalsByStatus(
+            @PathVariable Long statusId) {
+        var approvals = changeStatusService.findAllChangeStatusInSameStage(statusId);
+        return new ResponseEntity<>(approvals, HttpStatus.OK);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteApproval(@PathVariable Long id) {
         // Check if approval exists
@@ -63,29 +78,6 @@ public class ChangeRequestApprovalController {
 
         approvalService.deleteById(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
-    @GetMapping("/by-change-request/{changeRequestId}")
-    public ResponseEntity<List<ChangeRequestApprovalModel>> getApprovalsByChangeRequestId(
-            @PathVariable Long changeRequestId) {
-        List<ChangeRequestApprovalModel> approvals =
-                approvalService.findByChangeRequestId(changeRequestId);
-        return new ResponseEntity<>(approvals, HttpStatus.OK);
-    }
-
-    @GetMapping("/by-status/{status}")
-    public ResponseEntity<List<ChangeRequestApprovalModel>> getApprovalsByStatus(
-            @PathVariable String status) {
-        List<ChangeRequestApprovalModel> approvals = approvalService.findByOverallStatus(status);
-        return new ResponseEntity<>(approvals, HttpStatus.OK);
-    }
-
-    @GetMapping("/by-change-request/{changeRequestId}/status/{status}")
-    public ResponseEntity<List<ChangeRequestApprovalModel>> getApprovalsByChangeRequestAndStatus(
-            @PathVariable Long changeRequestId, @PathVariable String status) {
-        List<ChangeRequestApprovalModel> approvals =
-                approvalService.findByChangeRequestIdAndOverallStatus(changeRequestId, status);
-        return new ResponseEntity<>(approvals, HttpStatus.OK);
     }
 
 

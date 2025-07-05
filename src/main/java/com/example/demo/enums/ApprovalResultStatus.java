@@ -15,7 +15,7 @@ public enum ApprovalResultStatus {
     ACCEPT("Accept"), REJECT("Reject"), PENDING_APPROVAL("Pending Approval"),
     TOBE_SENT("To Be Sent"), UNKNOWN("Unknown Status");
     private final String value;
-
+    
     public static Optional<ApprovalResultStatus> fromValue(String text) {
         if (text == null) {
             return Optional.empty();

@@ -1,12 +1,8 @@
 package com.example.demo.service;
 
-import com.example.demo.entity.ChangeFlowEntity;
 import com.example.demo.enums.ApprovalResultStatus;
 import com.example.demo.model.FlowEdgeModel;
-import com.example.demo.model.FlowNodeModel;
 import com.example.demo.model.IndexedChangeFlowDataModel;
-import com.example.demo.service.impl.FlowManagementServiceImpl;
-import org.springframework.cache.annotation.CacheEvict;
 
 import java.util.List;
 import java.util.Map;
@@ -32,11 +28,6 @@ public interface FlowManagementService {
      */
     IndexedChangeFlowDataModel getFlowDataByChangeFlowId(Long changeFlowId);
 
-
-    @CacheEvict(value = FlowManagementServiceImpl.FLOW_DATA_CACHE,
-            key = "'CHANGE_FLOW_' + #changeFlowId")
-    ChangeFlowEntity saveFlowDataToChangeFlow(Long changeFlowId, List<FlowNodeModel> nodes,
-                                              List<FlowEdgeModel> edges);
 
     /**
      * Gets or default edge by node handle id.

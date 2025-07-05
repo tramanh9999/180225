@@ -28,7 +28,8 @@ public interface ChangeRequestService {
      * @return the change request approval result model
      */
     @Transactional
-    ChangeRequestModel processApprovalReply(ChangeRequestApprovalResultModel replyModel);
+    ChangeRequestModel processChangeRequestApprovalReply(
+            ChangeRequestApprovalResultModel replyModel);
 
 
     /**
@@ -45,7 +46,7 @@ public interface ChangeRequestService {
      * Process change request coordinator transition change request model.
      *
      * @param changeRequestId the change request id
-     * @param changeStatusId
+     * @param changeStatusId  changeStatusId
      * @return the updated ChangeRequestModel after processing the coordinator transition
      * @throws BusinessException        if the change request is not found or cannot be processed
      * @throws IllegalStateException    if the change request is not in a state that allows transition
@@ -57,21 +58,52 @@ public interface ChangeRequestService {
                                                                  ChangeProcessModel changeStatusId);
 
 
+    /**
+     * Continue process stage node.
+     *
+     * @param changeRequest the change request
+     * @param currentNode   the current node
+     * @param nextNode      the next node
+     * @param flowData      the flow data
+     */
     @Transactional
     void continueProcessStageNode(ChangeRequestEntity changeRequest,
                                   ChangeFlowNodeModel currentNode, ChangeFlowNodeModel nextNode,
                                   IndexedChangeFlowDataModel flowData);
 
+    /**
+     * Recursive process change request transition.
+     *
+     * @param changeRequest the change request
+     * @param edgeModel     the edge model
+     * @param flowData      the flow data
+     */
     @Transactional
     void recursiveProcessChangeRequestTransition(ChangeRequestEntity changeRequest,
                                                  FlowEdgeModel edgeModel,
                                                  IndexedChangeFlowDataModel flowData);
 
+
+    /**
+     * Continue process accepted approval node.
+     *
+     * @param changeRequest the change request
+     * @param currentNode   the current node
+     * @param nextNode      the next node
+     * @param flowData      the flow data
+     */
     void continueProcessAcceptedApprovalNode(ChangeRequestEntity changeRequest,
                                              ChangeFlowNodeModel currentNode,
                                              ChangeFlowNodeModel nextNode,
                                              IndexedChangeFlowDataModel flowData);
 
+    /**
+     * Handle create approval requests.
+     *
+     * @param changeRequestId                            the change request id
+     * @param changeTemplateId                           the change template id
+     * @param remainTobeCreateApprovalRequestForRoleUser the remain tobe create approval request for role user
+     */
     void handleCreateApprovalRequests(Long changeRequestId, Long changeTemplateId,
                                       List<ChangeRequestRoleUserModel> remainTobeCreateApprovalRequestForRoleUser);
 

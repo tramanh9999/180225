@@ -12,7 +12,9 @@ import lombok.Data;
 @Builder
 @Data
 @AllArgsConstructor
-public class ChangeProcessModel {
+public class ChangeProcessModel extends ChangeRequestApprovalResultModel {
     long changeStatusId;
     String changeStatusName;
+
+
 }

@@ -54,19 +54,6 @@ public class ChangeRequestApprovalServiceImpl implements ChangeRequestApprovalSe
     }
 
     @Override
-    public List<ChangeRequestApprovalModel> findByOverallStatus(String status) {
-        return approvalRepository.findByOverallStatus(status).stream().map(approvalMapper::toModel)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<ChangeRequestApprovalModel> findByChangeRequestIdAndOverallStatus(
-            Long changeRequestId, String status) {
-        return approvalRepository.findByChangeRequestIdAndOverallStatus(changeRequestId, status)
-                .stream().map(approvalMapper::toModel).collect(Collectors.toList());
-    }
-
-    @Override
     public ChangeRequestRoleModel findByChangeFlowIdAndNodeId(Long changeRequestId,
                                                               Long changeFlowId,
                                                               String changeFlowNodeStrId) {

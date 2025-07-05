@@ -15,11 +15,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.example.demo.service.impl.FlowManagementServiceImpl.createEdgeMapKey;
 
@@ -59,7 +58,8 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
 
     @Transactional
     @Override
-    public ChangeRequestModel processApprovalReply(ChangeRequestApprovalResultModel replyModel) {
+    public ChangeRequestModel processChangeRequestApprovalReply(
+            ChangeRequestApprovalResultModel replyModel) {
         var approvalData = validateAndPrepareApprovalReplyTransition(replyModel);
 
         var currentChangeFlowEdge = flowManagementService.getOrDefaultEdgeByNodeHandleId(
@@ -158,6 +158,7 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
 
 
 
+
         /*
          1. Reply with valid role : change request in a change flow node id  = node of change role
         that contain current change approval request id in
@@ -179,67 +180,6 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
                 .currentChangeFlowNodeHandleId(currentNodeHandleId).changeRole(changeRole)
                 .changeRequestApproval(approvalModel).flowData(indexedChangeFlowData).build();
     }
-
-
-    /**
-     * Filters a list of WorkflowUsers (assumed to be sorted by userOrder)
-     * to find records with REJECT or PENDING status that are:
-     * 1. After the latest ACCEPT record.
-     * 2. Before the earliest NULL_STATUS record.
-     *
-     * @param sortedUsersInGroup A list of WorkflowUser objects, already sorted by userOrder.
-     * @return A list of WorkflowUser objects matching the criteria.
-     */
-    public List<ChangeRequestRoleUserModel> filterPendingOrRejectInWindow(
-            List<ChangeRequestRoleUserModel> sortedUsersInGroup) {
-        if (sortedUsersInGroup == null || sortedUsersInGroup.isEmpty()) {
-            return java.util.Collections.emptyList();
-        }
-
-        // Find the userOrder of the latest ACCEPT record
-        // We initialize with -1 to ensure any valid order (0 or positive) will be greater
-        int latestAcceptOrder = -1;
-        Optional<ChangeRequestRoleUserModel> latestAcceptUser = sortedUsersInGroup.stream()
-                .filter(user -> user.getApprovalModel() != null &&
-                        ApprovalResultStatus.ACCEPT.equals(
-                                user.getApprovalModel().getOverallStatus()))
-                .max(Comparator.comparingInt(
-                        ChangeRequestRoleUserModel::getCabGroupOrder)); // Find max
-        // order among ACCEPTS
-
-        if (latestAcceptUser.isPresent()) {
-            latestAcceptOrder = latestAcceptUser.get().getCabGroupOrder();
-        }
-
-        // Find the userOrder of the earliest NULL_STATUS record
-        // We initialize with Integer.MAX_VALUE to ensure any valid order will be smaller
-        int earliestNullStatusOrder = Integer.MAX_VALUE;
-        Optional<ChangeRequestRoleUserModel> earliestNullStatusUser =
-                sortedUsersInGroup.stream().filter(user -> user.getApprovalModel() == null)
-                        .min(Comparator.comparingInt(
-                                ChangeRequestRoleUserModel::getCabGroupOrder)); // Find min
-        // order among NULL_STATUS
-
-        if (earliestNullStatusUser.isPresent()) {
-            earliestNullStatusOrder = earliestNullStatusUser.get().getCabGroupOrder();
-        }
-
-        // Filter users that are REJECT or PENDING and fall within the defined window
-        final int finalLatestAcceptOrder = latestAcceptOrder;
-        final int finalEarliestNullStatusOrder = earliestNullStatusOrder;
-
-        return sortedUsersInGroup.stream().filter(user -> (user.getApprovalModel() != null &&
-                        (ApprovalResultStatus.REJECT.equals(user.getApprovalModel().getOverallStatus()) ||
-                                ApprovalResultStatus.PENDING_APPROVAL.equals(
-                                        user.getApprovalModel().getOverallStatus()))))
-                .filter(user -> user.getCabGroupOrder() >
-                        finalLatestAcceptOrder) // Must be after the
-                // latest ACCEPT
-                .filter(user -> user.getCabGroupOrder() <
-                        finalEarliestNullStatusOrder) // Must be before the earliest NULL_STATUS
-                .collect(Collectors.toList());
-    }
-
 
     @Override
     public FlowTransitionDetail validateAndPrepareChangeCoordinatorTransition(Long changeRequestId,
@@ -305,26 +245,16 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
     @Transactional
     @Override
     public ChangeRequestModel processChangeRequestCoordinatorTransition(Long changeRequestId,
-                                                                        ChangeProcessModel changeProcessModel) {
+                                                                        ChangeProcessModel transition) {
         var changeRequestData =
-                validateAndPrepareChangeCoordinatorTransition(changeRequestId, changeProcessModel);
+                validateAndPrepareChangeCoordinatorTransition(changeRequestId, transition);
 
-        var currentChangeFlowEdge = flowManagementService.getOrDefaultEdgeByNodeHandleId(
+        var transitionEdge = flowManagementService.getOrDefaultEdgeByNodeHandleId(
                 changeRequestData.getCurrentChangeFlowNodeHandleId(),
                 changeRequestData.getFlowData());
 
-        if (currentChangeFlowEdge.getTargetNodeModel() == null ||
-                currentChangeFlowEdge.getTargetNodeModel().getParsedType() == NodeType.END) {
-            // If the next node is not confined in change flow / is END node, then stop processing
-            return changeRequestMapper.toDto(changeRequestData.getChangeRequest());
-        }
-        ApprovalResultStatus actionTaken = null;
-        Long nextChangeStatusId = changeProcessModel.getChangeStatusId();
-        transitionChangeRequest(changeRequestData.getChangeRequest(), nextChangeStatusId,
-                changeRequestData.getChangeRequest().getChangeFlowNodeId(), actionTaken);
-
         recursiveProcessChangeRequestTransition(changeRequestData.getChangeRequest(),
-                currentChangeFlowEdge, changeRequestData.getFlowData());
+                transitionEdge, changeRequestData.getFlowData());
         return changeRequestMapper.toDto(changeRequestData.getChangeRequest());
     }
 
@@ -361,7 +291,7 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
                                                         FlowEdgeModel edgeModel,
                                                         IndexedChangeFlowDataModel flowData) {
         Long changeRequestId = changeRequest.getId();
-        //check null nextnode
+        //check null next node
         if (!shouldMoveChangeRequestByCheckingEdge(edgeModel)) {
             return;
         }
@@ -375,7 +305,7 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
                 currentNode.getParsedType().getCommonType() == NodeCommonType.CHANGE_STAGE ?
                         currentNode.getParsedHandle().getChangeStatusId() :
                         changeRequest.getChangeStatusId();
-        transitionChangeRequest(changeRequest, nextChangeStatusId, currentNodeId, actionTaken);
+        updateChangeRequestLocation(changeRequest, nextChangeStatusId, currentNodeId, actionTaken);
 
         if (currentNodeType.getCommonType() == NodeCommonType.CHANGE_STAGE) {
             continueProcessStageNode(changeRequest, previousNode, currentNode, flowData);
@@ -384,22 +314,22 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
                     changeRequest.getId(), changeRequest.getChangeTemplateId(),
                     currentNode.getId());
             //add logic to check if empty users in currentChangeRole
-            var approvalList = currentChangeRole.getWorkflows().stream()
-                    .flatMap(workflow -> workflow.getGroups().stream())
-                    .flatMap(group -> group.getUsers().stream())
+            var approvalList = currentChangeRole.getWorkflows().stream().flatMap(
+                            workflow -> workflow.getGroups() != null ? workflow.getGroups().stream() :
+                                    Stream.of()).flatMap(
+                            group -> group.getUsers() != null ? group.getUsers().stream() : Stream.of())
                     .map(ChangeRequestRoleUserModel::getApprovalModel).toList();
             //check approvalList empty or all users accepted
 
             boolean allUserAccepted = !approvalList.isEmpty() && approvalList.stream().noneMatch(
                     approval -> approval == null || !Objects.equals(ApprovalResultStatus.ACCEPT,
                             approval.getOverallStatus()));
-            if (allUserAccepted) {
+            if (allUserAccepted)
                 continueProcessAcceptedApprovalNode(changeRequest, previousNode, currentNode,
                         flowData);
-            } else {
-                continueProcessApprovalNode(changeRequest, previousNode, currentNode,
-                        currentChangeRole);
-            }
+            else continueProcessApprovalNode(changeRequest, previousNode, currentNode,
+                    currentChangeRole);
+
         } else {
             // Case: Next node is UNKNOWN or any other unexpected type
             log.warn(String.format(
@@ -444,59 +374,62 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
                                              ChangeRequestRoleModel currentRole) {
 
         var actionTaken = previousNode.getParsedHandle().getApprovedAction();
-        transitionChangeRequest(changeRequest, changeRequest.getChangeStatusId(),
+        updateChangeRequestLocation(changeRequest, changeRequest.getChangeStatusId(),
                 currentNode.getId(), actionTaken);
-        for (ChangeRequestRoleUserWorkflowListModel oneWorkflowWithApprovalData : currentRole.getWorkflows()) {
-            //flat the users in workflow
-            // and process each group in the workflow
-            List<ChangeRequestRoleUserModel> oneWorkflowUsers =
-                    oneWorkflowWithApprovalData.getGroups().stream()
-                            .flatMap(group -> group.getUsers().stream()).toList();
+        var userToCreateApprovalRequests = new ArrayList<ChangeRequestRoleUserModel>();
+        var usersToResendMail = new ArrayList<ChangeRequestRoleUserModel>();
 
-            // filter oneWorkflowUsers that has min cabGroup and min cabGroupOrder in a cab group and
-            // approvalModel is null or has status is not ACCEPTED
-            List<ChangeRequestRoleUserModel> filteredUsers = oneWorkflowUsers.stream()
-                    .filter(user -> user.getApprovalModel() == null ||
-                            user.getApprovalModel().getOverallStatus() !=
-                                    ApprovalResultStatus.ACCEPT)
-                    .sorted(Comparator.comparing(ChangeRequestRoleUserModel::getCabGroup)
-                            .thenComparing(ChangeRequestRoleUserModel::getCabGroupOrder)).toList();
+        // Process each workflow user in the current role
+        currentRole.getWorkflows().forEach(
+                workflow -> handleUserInWorkflow(workflow, userToCreateApprovalRequests,
+                        usersToResendMail));
 
-            List<ChangeRequestRoleUserModel> tobeCreateApprovalRequestUsers =
-                    filteredUsers.stream().filter(user -> user.getApprovalModel() == null).toList();
-
-            //resend mail to users that has approvalModel is not null and status is REJECTED
-            List<ChangeRequestRoleUserModel> usersToResendMail = filteredUsers.stream()
-                    .filter(user -> user.getApprovalModel() != null &&
-                            user.getApprovalModel().getOverallStatus() ==
-                                    ApprovalResultStatus.REJECT).toList();
-
-
-            if (!usersToResendMail.isEmpty()) {
-                //log the users to resend mail
-                log.info("Resending mail to users: " +
-                        usersToResendMail.stream().map(ChangeRequestRoleUserModel::getUsername)
-                                .toList());
-                mailService.sendBulkEmail(usersToResendMail, null,
-                        "Your approval request has been rejected. Please review and take action.");
-            }
-
-
-            //log the users to create approval request
-            log.info("Creating approval requests for users: " +
-                    tobeCreateApprovalRequestUsers.stream()
-                            .map(ChangeRequestRoleUserModel::getUsername).toList());
-
-            if (!tobeCreateApprovalRequestUsers.isEmpty()) {
-                handleCreateApprovalRequests(changeRequest.getId(),
-                        changeRequest.getChangeTemplateId(), tobeCreateApprovalRequestUsers);
-            }
+        if (!usersToResendMail.isEmpty()) {
+            //log the users to resend mail
+            log.info("Resending mail to users: " +
+                    usersToResendMail.stream().map(ChangeRequestRoleUserModel::getUsername)
+                            .toList());
+            mailService.sendBulkEmail(usersToResendMail, null,
+                    "Your approval request has been rejected. Please review and take action.");
         }
-        // maybe save info accepted , rejected, resend mail in change request here
+        log.info("Creating approval requests for users: " +
+                userToCreateApprovalRequests.stream().map(ChangeRequestRoleUserModel::getUsername)
+                        .toList());
+
+        if (!userToCreateApprovalRequests.isEmpty()) {
+            handleCreateApprovalRequests(changeRequest.getId(), changeRequest.getChangeTemplateId(),
+                    userToCreateApprovalRequests);
+        }
     }
 
-    void transitionChangeRequest(ChangeRequestEntity changeRequest, Long newChangeRequestStatusId,
-                                 Long newChangeFlowNodeId, ApprovalResultStatus actionTaken) {
+    void handleUserInWorkflow(ChangeRequestRoleUserWorkflowListModel workflow,
+                              List<ChangeRequestRoleUserModel> userToCreateApprovalRequests,
+                              List<ChangeRequestRoleUserModel> usersToResendMail) {
+        //flat the users in workflow
+        // and process each group in the workflow
+        List<ChangeRequestRoleUserListModel> listGroup = workflow.getGroups();
+
+        for (ChangeRequestRoleUserListModel oneGroup : listGroup) {
+            // if all user in group has approval null , then create approval request for the
+            // first user in group
+            List<ChangeRequestRoleUserModel> users = oneGroup.getUsers();
+            if (users == null || users.isEmpty()) {
+                continue;
+            }
+            // find fist user has null approval model, if present add to userToCreateApprovalRequests
+            users.stream().filter(user -> user.getApprovalModel() == null).findFirst()
+                    .ifPresent(userToCreateApprovalRequests::add);
+
+            // find first reject , if present add to usersToResendMail
+            users.stream().filter(user -> user.getApprovalModel() != null &&
+                            user.getApprovalModel().getOverallStatus() == ApprovalResultStatus.REJECT)
+                    .findFirst().ifPresent(usersToResendMail::add);
+        }
+    }
+
+    void updateChangeRequestLocation(ChangeRequestEntity changeRequest,
+                                     Long newChangeRequestStatusId, Long newChangeFlowNodeId,
+                                     ApprovalResultStatus actionTaken) {
 
 
         //log change request

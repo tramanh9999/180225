@@ -55,7 +55,7 @@ public class ChangeRequestController {
     public ResponseEntity<ChangeRequestModel> replyToApprovalRequest(
             @RequestBody ChangeRequestApprovalResultModel replyModel) {
         ChangeRequestModel updatedApprovalRequest =
-                changeRequestService.processApprovalReply(replyModel);
+                changeRequestService.processChangeRequestApprovalReply(replyModel);
         return ResponseEntity.ok(updatedApprovalRequest);
     }
 

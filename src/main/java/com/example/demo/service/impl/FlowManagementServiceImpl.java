@@ -15,7 +15,6 @@ import com.example.demo.service.ChangeFlowNodeService;
 import com.example.demo.service.FlowManagementService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -42,21 +41,6 @@ public class FlowManagementServiceImpl implements FlowManagementService {
     @Autowired
     private ChangeFlowNodeService changeFlowNodeService;
 
-    /**
-     * Convert a list of FlowNodeModel objects to a JSON string.
-     *
-     * @param nodeModels the list of FlowNodeModel objects
-     * @return the JSON string representation, or null if conversion fails
-     */
-    public static String convertFlowNodesModelListToJson(List<FlowNodeModel> nodeModels) {
-        try {
-            return JSON.toJSONString(nodeModels, SerializerFeature.PrettyFormat);
-        } catch (Exception e) {
-            log.error("Error converting List<FlowNodeModel> to JSON string using Fastjson: {}",
-                    e.getMessage(), e);
-            return null;
-        }
-    }
 
     /**
      * Convert a list of FlowEdgeModel objects to a JSON string.
@@ -183,28 +167,6 @@ public class FlowManagementServiceImpl implements FlowManagementService {
      * indicating if an important change occurred.
      */
 
-    @CacheEvict(value = FLOW_DATA_CACHE, key = "'CHANGE_FLOW_' + #changeFlowId")
-    @Override
-    public ChangeFlowEntity saveFlowDataToChangeFlow(Long changeFlowId, List<FlowNodeModel> nodes,
-                                                     List<FlowEdgeModel> edges) {
-        log.info("Saving flow data to database for ID: {}", changeFlowId);
-        Optional<ChangeFlowEntity> optionalEntity = changeFlowRepository.findById(changeFlowId);
-        if (optionalEntity.isPresent()) {
-            ChangeFlowEntity entity = optionalEntity.get();
-
-            String flowNodesJson = convertFlowNodesModelListToJson(nodes);
-            entity.setFlowNodes(flowNodesJson);
-
-            String flowEdgesJson = convertFlowEdgesModelListToJson(edges);
-            entity.setFlowEdges(flowEdgesJson);
-
-            ChangeFlowEntity updatedEntity = changeFlowRepository.save(entity);
-            log.info("Data saved for ID: {}", changeFlowId);
-            return updatedEntity;
-        }
-        log.error("ChangeFlowEntity not found with id: {}", changeFlowId);
-        throw new BusinessException(ErrorCodeCommon.CHANGE_FLOW_NOT_FOUND, changeFlowId);
-    }
 
     /**
      * Finds the current FlowNode and potential next FlowNode(s) based on

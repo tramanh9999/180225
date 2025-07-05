@@ -48,4 +48,6 @@ public interface ChangeRequestRoleService {
      */
     List<ChangeRequestRoleModel> getWorkflowAndGroup(List<ChangeRequestRoleModel> items);
 
+    List<ChangeRequestRoleModel> getOrDefaultAllChangeFlowNodesByChangeTemplateIdAndRequestId(
+            Long changeTemplateId, Long changeRequestId) throws BusinessException;
 }
