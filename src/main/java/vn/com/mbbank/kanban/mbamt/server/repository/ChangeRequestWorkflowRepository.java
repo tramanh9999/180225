@@ -1,8 +1,8 @@
 package vn.com.mbbank.kanban.mbamt.server.repository;
 
-import vn.com.mbbank.kanban.mbamt.server.entity.ChangeRequestWorkflowEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import vn.com.mbbank.kanban.mbamt.server.entity.ChangeRequestWorkflowEntity;
 
 import java.util.List;
 
@@ -20,4 +20,5 @@ public interface ChangeRequestWorkflowRepository
      */
     List<ChangeRequestWorkflowEntity> findByIdIn(List<Long> ids);
 
+    List<ChangeRequestWorkflowEntity> findAllByChangeId(Long changeRequestId);
 }

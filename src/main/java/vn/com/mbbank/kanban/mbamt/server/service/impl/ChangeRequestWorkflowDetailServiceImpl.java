@@ -5,10 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.com.mbbank.kanban.mbamt.server.entity.ChangeRequestWorkflowDetailEntity;
 import vn.com.mbbank.kanban.mbamt.server.mapper.ChangeRequestWorkflowDetailMapper;
-import vn.com.mbbank.kanban.mbamt.server.model.BusinessException;
-import vn.com.mbbank.kanban.mbamt.server.model.ChangeRequestWorkflowDetailModel;
-import vn.com.mbbank.kanban.mbamt.server.model.ChangeWorkflowNodeModel;
-import vn.com.mbbank.kanban.mbamt.server.model.ErrorCodeCommon;
+import vn.com.mbbank.kanban.mbamt.server.model.*;
 import vn.com.mbbank.kanban.mbamt.server.repository.ChangeRequestWorkflowDetailRepository;
 import vn.com.mbbank.kanban.mbamt.server.service.ChangeFlowNodeService;
 import vn.com.mbbank.kanban.mbamt.server.service.ChangeNodeService;
@@ -31,6 +28,7 @@ public class ChangeRequestWorkflowDetailServiceImpl implements ChangeRequestWork
     private final ChangeRequestWorkflowService changeRequestWorkflowService;
     private final ChangeFlowNodeService changeFlowNodeService;
     private final ChangeNodeService changeNodeService;
+    private final ChangeRequestWorkflowDetailService changeRequestWorkflowDetailService;
 
 
     @Override
@@ -152,5 +150,14 @@ public class ChangeRequestWorkflowDetailServiceImpl implements ChangeRequestWork
         });
 
         return workflowDetails;
+    }
+
+    @Override
+    public List<ChangeRequestWorkflowDetailModel> findAllByChangeRequestId(Long changeRequestId) {
+        List<Long> wlIds =
+                changeRequestWorkflowService.findAllByChangeRequestId(changeRequestId).stream()
+                        .map(ChangeRequestWorkflowModel::getId).collect(Collectors.toList());
+        return changeRequestWorkflowDetailService.findAllByChangeRequestWorkflowId(wlIds).stream()
+                .map(detailMapper::toModel).toList();
     }
 }

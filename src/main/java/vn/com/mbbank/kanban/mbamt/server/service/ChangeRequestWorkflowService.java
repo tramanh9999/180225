@@ -1,7 +1,7 @@
 package vn.com.mbbank.kanban.mbamt.server.service;
 
-import vn.com.mbbank.kanban.mbamt.server.model.ChangeRequestWorkflowModel;
 import org.springframework.transaction.annotation.Transactional;
+import vn.com.mbbank.kanban.mbamt.server.model.ChangeRequestWorkflowModel;
 
 import java.util.List;
 import java.util.Map;
@@ -22,4 +22,6 @@ public interface ChangeRequestWorkflowService {
     @Transactional(readOnly = true)
         // Read-only for performance optimization
     ChangeRequestWorkflowModel getWorkflowById(Long id);
+
+    List<ChangeRequestWorkflowModel> findAllByChangeRequestId(Long changeRequestId);
 }

@@ -40,7 +40,7 @@ public class ChangeRequestController {
 //    @GetMapping("/{id}/change-roles")
 //    public ResponseEntity<List<ChangeRequestRoleModel>> findCurrentAndNextNodeByCurrentPoint(
 //            @PathVariable("id") Long id) {
-//        var res = changeRequestRoleService.findAllByChangeRequestId(id);
+//        var res = changeRequestRoleService.findAllByChangeId(id);
 //        return ResponseEntity.ok(res);
 //    }
 

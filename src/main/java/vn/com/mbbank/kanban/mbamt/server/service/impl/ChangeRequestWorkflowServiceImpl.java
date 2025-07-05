@@ -1,13 +1,13 @@
 package vn.com.mbbank.kanban.mbamt.server.service.impl;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import vn.com.mbbank.kanban.mbamt.server.entity.ChangeRequestWorkflowEntity;
 import vn.com.mbbank.kanban.mbamt.server.mapper.ChangeRequestWorkflowMapper;
 import vn.com.mbbank.kanban.mbamt.server.model.ChangeRequestWorkflowModel;
 import vn.com.mbbank.kanban.mbamt.server.repository.ChangeRequestWorkflowRepository;
 import vn.com.mbbank.kanban.mbamt.server.service.ChangeRequestWorkflowService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -44,6 +44,12 @@ public class ChangeRequestWorkflowServiceImpl implements ChangeRequestWorkflowSe
     public ChangeRequestWorkflowModel getWorkflowById(Long id) {
         return changeRequestWorkflowMapper.toDto(
                 changeRequestWorkflowRepository.findById(id).get());
+    }
+
+    @Override
+    public List<ChangeRequestWorkflowModel> findAllByChangeRequestId(Long changeRequestId) {
+        return changeRequestWorkflowRepository.findAllByChangeId(changeRequestId).stream()
+                .map(changeRequestWorkflowMapper::toDto).collect(Collectors.toList());
     }
 
     /**

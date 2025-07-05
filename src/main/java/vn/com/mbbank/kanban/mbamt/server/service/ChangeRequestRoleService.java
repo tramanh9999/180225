@@ -3,10 +3,8 @@ package vn.com.mbbank.kanban.mbamt.server.service;
 import jakarta.transaction.Transactional;
 import vn.com.mbbank.kanban.mbamt.server.model.BusinessException;
 import vn.com.mbbank.kanban.mbamt.server.model.ChangeRequestRoleModel;
-import vn.com.mbbank.kanban.mbamt.server.model.ChangeRequestWorkflowModel;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Service interface for managing Change Request Roles.
@@ -22,7 +20,7 @@ public interface ChangeRequestRoleService {
 //     * @return List of Change Request Role entities associated with the specified
 //     * Change Request ID
 //     */
-//    List<ChangeRequestRoleModel> findAllByChangeRequestId(Long changeRequestId);
+//    List<ChangeRequestRoleModel> findAllByChangeId(Long changeRequestId);
 
     /**
      * Validate a list of Change Request Role models.
@@ -33,9 +31,9 @@ public interface ChangeRequestRoleService {
      */
     void validateList(List<ChangeRequestRoleModel> roles);
 
-    List<ChangeRequestRoleModel> findAllChangeFlowNodesByChangeTemplateIdOrRequestId(
-            Long changeTemplateId, Long changeRequestId) throws BusinessException;
 
+    List<ChangeRequestRoleModel> findAllChangeFlowNodesByChangeTemplateIdOrRequestId(
+            Long changeRequestId) throws BusinessException;
 
     ChangeRequestRoleModel getChangeRequestRoleByChangeFlowNodeId(Long changeRequestId,
                                                                   Long changeTemplateId,
@@ -50,10 +48,8 @@ public interface ChangeRequestRoleService {
      */
     List<ChangeRequestRoleModel> getWorkflowAndGroup(List<ChangeRequestRoleModel> items);
 
-    List<ChangeRequestRoleModel> getOrDefaultAllChangeFlowNodesByChangeTemplateIdAndRequestId(
-            Long changeTemplateId, Long changeRequestId) throws BusinessException;
 
-    List<ChangeRequestRoleModel> getWorkflowAndGroup(List<ChangeRequestRoleModel> roles,
-                                                     Map<Long, ChangeRequestWorkflowModel> mapWorkflows)
+    List<ChangeRequestRoleModel> getOrDefaultChangeRoleByChangeRequestId(Long changeRequestId)
             throws BusinessException;
+
 }

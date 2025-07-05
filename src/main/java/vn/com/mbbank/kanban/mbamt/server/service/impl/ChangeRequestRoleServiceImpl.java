@@ -94,7 +94,7 @@ public class ChangeRequestRoleServiceImpl implements ChangeRequestRoleService {
     }
 
 //    @Override
-//    public List<ChangeRequestRoleModel> findAllByChangeRequestId(Long changeRequestId) {
+//    public List<ChangeRequestRoleModel> findAllByChangeId(Long changeRequestId) {
 //        if (changeRequestId == null) {
 //            throw new BusinessException(ErrorCodeCommon.ID_NOT_FOUND, changeRequestId);
 //        }
@@ -103,9 +103,9 @@ public class ChangeRequestRoleServiceImpl implements ChangeRequestRoleService {
 //                    changeRequestId);
 //        }
 //
-//        List<ChangeRequestRoleEntity> roles = repository.findAllByChangeRequestId(changeRequestId);
+//        List<ChangeRequestRoleEntity> roles = repository.findAllByChangeId(changeRequestId);
 //        List<ChangeRequestRoleUserModel> users =
-//                changeRequestRoleUserService.findAllByChangeRequestId(changeRequestId);
+//                changeRequestRoleUserService.findAllByChangeId(changeRequestId);
 //
 //
 //        ///  map users to get changeRequestWorkflowDetailId
@@ -166,72 +166,44 @@ public class ChangeRequestRoleServiceImpl implements ChangeRequestRoleService {
 
     @Override
     public List<ChangeRequestRoleModel> findAllChangeFlowNodesByChangeTemplateIdOrRequestId(
-            Long changeTemplateId, Long changeRequestId) throws BusinessException {
-
-        var isNotSelectChangeTemplate = changeTemplateId == null || changeTemplateId == 0L;
-        if (isNotSelectChangeTemplate) {
-            return Collections.emptyList();
-        }
-
-        var defaultCreateChangeId = 0L;
-        if (changeRequestId == null) {
-            changeRequestId = defaultCreateChangeId;
-        }
-
-        var isCreateChange = Objects.equals(changeRequestId, defaultCreateChangeId);
-        if (!isCreateChange) {
-            ChangeRequestModel changeRequest = changeRequestService.findById(changeRequestId);
-            if (!Objects.equals(changeRequest.getChangeTemplateId(), changeTemplateId)) {
-                throw new BusinessException(ErrorCodeCommon.CHANGE_REQUEST_TEMPLATE_HAS_CHANGE,
-                        changeTemplateId);
-            }
-        }
+            Long changeRequestId) throws BusinessException {
+        ChangeRequestModel changeRequest = changeRequestService.findById(changeRequestId);
 
         List<ChangeFlowNodeModel> flowNodeModelList =
-                changeFlowNodeService.findAllChangeFlowNodesByChangeTemplateId(changeTemplateId);
+                changeFlowNodeService.findAllChangeFlowNodesByChangeTemplateId(
+                        changeRequest.getChangeTemplateId());
         Map<Long, ChangeFlowNodeModel> mapFlowNode = flowNodeModelList.stream()
                 .collect(Collectors.toMap(ChangeFlowNodeModel::getId, Function.identity()));
 
-        List<ChangeRequestRoleModel> requestRoleLst = new ArrayList<>();
-        Map<Long, List<ChangeRequestRoleUserModel>> mapRoleUserListWithRoleId = new HashMap<>();
+        //map change flow node to change request role
+        var requestRoleLst = changeRequestRoleMapper.mapToDtos(
+                        repository.findAllByChangeRequestId(changeRequestId)).stream()
+                .filter(role -> Objects.nonNull(role.getChangeFlowNodeId()) &&
+                        mapFlowNode.containsKey(role.getChangeFlowNodeId()))
+                .peek(role -> role.setChangeFlowNode(mapFlowNode.get(role.getChangeFlowNodeId())))
+                .toList();
 
-        if (changeRequestId != defaultCreateChangeId) {
-            requestRoleLst = changeRequestRoleMapper.mapToDtos(
-                            repository.findAllByChangeRequestId(changeRequestId)).stream()
-                    .filter(role -> Objects.nonNull(role.getChangeFlowNodeId()) &&
-                            mapFlowNode.containsKey(role.getChangeFlowNodeId()))
-                    .peek(role -> role.setChangeFlowNode(
-                            mapFlowNode.get(role.getChangeFlowNodeId()))).toList();
-
-            List<ChangeRequestRoleUserModel> allRoleUserInChangeRequest =
-                    changeRequestRoleUserService.findAllByChangeRequestId(changeRequestId);
-
-            //find all workflowId by workflowNodeDetailId in change request role user
-            if (allRoleUserInChangeRequest == null || allRoleUserInChangeRequest.isEmpty()) {
-                return requestRoleLst;
-            }
+        //all role user in change request
+        var allRoleUserInChangeRequest =
+                changeRequestRoleUserService.findAllByChangeRequestId(changeRequestId);
 
 
-            mapRoleUserListWithRoleId = allRoleUserInChangeRequest.stream().collect(
-                    Collectors.groupingBy(ChangeRequestRoleUserModel::getChangeRequestRoleId));
-        }
+        //group all role user by changeRequestRoleId
+        Map<Long, List<ChangeRequestRoleUserModel>> mapRoleUserListWithRoleId =
+                allRoleUserInChangeRequest.stream().collect(
+                        Collectors.groupingBy(ChangeRequestRoleUserModel::getChangeRequestRoleId));
 
-        Map<Long, ChangeRequestRoleModel> mapChangeRequestRoleWithNode = requestRoleLst.stream()
-                .collect(Collectors.toMap(ChangeRequestRoleModel::getChangeFlowNodeId,
-                        Function.identity()));
+        var mapChangeRequestRoleWithNode = requestRoleLst.stream().collect(
+                Collectors.toMap(ChangeRequestRoleModel::getChangeFlowNodeId, Function.identity()));
 
         AtomicInteger index = new AtomicInteger(flowNodeModelList.size());
-        Map<Long, List<ChangeRequestRoleUserModel>> finalMapRoleUserListWithRoleId =
-                mapRoleUserListWithRoleId;
-        Long finalChangeRequestId = changeRequestId;
 
         requestRoleLst = flowNodeModelList.stream().map(flowNode -> {
             var role = mapChangeRequestRoleWithNode.getOrDefault(flowNode.getId(),
                     ChangeRequestRoleModel.builder().id((long) index.getAndDecrement())
                             .changeFlowNodeId(flowNode.getId()).changeFlowNode(flowNode)
-                            .changeRequestId(finalChangeRequestId).changeFlowNode(flowNode)
-                            .build());
-            var roleUsers = finalMapRoleUserListWithRoleId.getOrDefault(role.getId(),
+                            .changeRequestId(changeRequestId).changeFlowNode(flowNode).build());
+            var roleUsers = mapRoleUserListWithRoleId.getOrDefault(role.getId(),
                     List.of(ChangeRequestRoleUserModel.builder().username(Strings.EMPTY).id(0L)
                             .changeRequestRoleId(role.getId()).build()));
             role.setUsers(roleUsers);
@@ -260,8 +232,7 @@ public class ChangeRequestRoleServiceImpl implements ChangeRequestRoleService {
 
 
         List<ChangeRequestRoleModel> roleList =
-                findAllChangeFlowNodesByChangeTemplateIdOrRequestId(changeTemplateId,
-                        changeRequestId);
+                findAllChangeFlowNodesByChangeTemplateIdOrRequestId(changeRequestId);
 
         if (roleList.isEmpty()) {
             throw new BusinessException(ErrorCodeCommon.CHANGE_REQUEST_ROLE_NOT_CONFIGURED,
@@ -404,46 +375,32 @@ public class ChangeRequestRoleServiceImpl implements ChangeRequestRoleService {
     }
 
 
+    //NEW
+
     @Override
-    public List<ChangeRequestRoleModel> getOrDefaultAllChangeFlowNodesByChangeTemplateIdAndRequestId(
-            Long changeTemplateId, Long changeRequestId) throws BusinessException {
+    public List<ChangeRequestRoleModel> getOrDefaultChangeRoleByChangeRequestId(
+            Long changeRequestId) throws BusinessException {
+        var changeRequest = changeRequestService.findById(changeRequestId);
+        var changeTemplateId = changeRequest.getChangeTemplateId();
 
-        var isNotSelectChangeTemplate = changeTemplateId == null || changeTemplateId == 0L;
-        if (isNotSelectChangeTemplate) {
-            return Collections.emptyList();
-        }
-        var defaultCreateChangeId = 0L;
-        if (changeRequestId == null) {
-            changeRequestId = defaultCreateChangeId;
-        }
-
-        List<ChangeFlowNodeModel> flowNodeModelList =
+        var flowNodeModelList =
                 changeFlowNodeService.findAllChangeFlowNodesByChangeTemplateId(changeTemplateId);
-        Map<Long, ChangeFlowNodeModel> mapFlowNode = flowNodeModelList.stream()
+        var mapFlowNode = flowNodeModelList.stream()
                 .collect(Collectors.toMap(ChangeFlowNodeModel::getId, Function.identity()));
 
-        List<ChangeRequestRoleModel> requestRoleLst = new ArrayList<>();
-        Map<Long, List<ChangeRequestRoleUserModel>> mapRoleIdWithUsers = new HashMap<>();
+        var requestRoleLst =
+                changeRequestRoleMapper.mapTo(repository.findAllByChangeRequestId(changeRequestId))
+                        .stream().filter(role -> Objects.nonNull(role.getChangeFlowNodeId()) &&
+                                mapFlowNode.containsKey(role.getChangeFlowNodeId()))
+                        .peek(role -> role.setChangeFlowNode(
+                                mapFlowNode.get(role.getChangeFlowNodeId()))).toList();
 
-        if (changeRequestId != defaultCreateChangeId) {
-            requestRoleLst = changeRequestRoleMapper.mapTo(
-                            repository.findAllByChangeRequestId(changeRequestId)).stream()
-                    .filter(role -> Objects.nonNull(role.getChangeFlowNodeId()) &&
-                            mapFlowNode.containsKey(role.getChangeFlowNodeId()))
-                    .peek(role -> role.setChangeFlowNode(
-                            mapFlowNode.get(role.getChangeFlowNodeId()))).toList();
-
-            List<ChangeRequestRoleUserModel> users =
-                    changeRequestRoleUserService.findAllByChangeRequestId(changeRequestId);
-            mapRoleIdWithUsers = users.stream().collect(
-                    Collectors.groupingBy(ChangeRequestRoleUserModel::getChangeRequestRoleId));
-            Map<Long, List<ChangeRequestRoleUserModel>> finalMapRoleIdWithUsers =
-                    mapRoleIdWithUsers;
-            requestRoleLst = requestRoleLst.stream()
-                    .peek(role -> role.setUsers(finalMapRoleIdWithUsers.get(role.getId())))
-                    .toList();
-        }
-        Map<Long, ChangeRequestRoleModel> mapNodeWithRole = requestRoleLst.stream().collect(
+        var users = changeRequestRoleUserService.findAllByChangeRequestId(changeRequestId);
+        var mapRoleIdWithUsers = users.stream()
+                .collect(Collectors.groupingBy(ChangeRequestRoleUserModel::getChangeRequestRoleId));
+        requestRoleLst = requestRoleLst.stream()
+                .peek(role -> role.setUsers(mapRoleIdWithUsers.get(role.getId()))).toList();
+        var mapNodeWithRole = requestRoleLst.stream().collect(
                 Collectors.toMap(ChangeRequestRoleModel::getChangeFlowNodeId, Function.identity()));
         var allRoleUsers =
                 mapRoleIdWithUsers.values().stream().flatMap(Collection::stream).toList();
@@ -474,43 +431,26 @@ public class ChangeRequestRoleServiceImpl implements ChangeRequestRoleService {
             }
         });
 
-        AtomicInteger index = new AtomicInteger(flowNodeModelList.size());
-        Map<Long, List<ChangeRequestRoleUserModel>> finalUsersByChangeRequestRoleId =
-                mapRoleIdWithUsers;
-        Long finalChangeRequestId = changeRequestId;
+        var index = new AtomicInteger(flowNodeModelList.size());
         requestRoleLst = flowNodeModelList.stream().map((flowNode) -> {
             if (mapNodeWithRole.containsKey(flowNode.getId())) {
                 return mapNodeWithRole.get(flowNode.getId());
             }
-            ChangeRequestRoleModel role =
-                    ChangeRequestRoleModel.builder().id((long) index.getAndDecrement())
-                            .changeFlowNodeId(flowNode.getId()).changeFlowNode(flowNode)
-                            .changeRequestId(finalChangeRequestId).changeFlowNode(flowNode).build();
+            var role = ChangeRequestRoleModel.builder().id((long) index.getAndDecrement())
+                    .changeFlowNodeId(flowNode.getId()).changeFlowNode(flowNode)
+                    .changeRequestId(changeRequestId).changeFlowNode(flowNode).build();
 
             if (ChangeFlowNodeTypeEnum.CAB.equals(flowNode.getType())) {
 
             }
-            finalUsersByChangeRequestRoleId.put(role.getId(),
+            mapRoleIdWithUsers.put(role.getId(),
                     List.of(ChangeRequestRoleUserModel.builder().username(Strings.EMPTY).id(0L)
                             .changeRequestRoleId(role.getId()).build()));
             return role;
         }).toList();
 
-        return getWorkflowAndGroup(requestRoleLst, mapWorkflows);
-    }
-
-
-    @Override
-    public List<ChangeRequestRoleModel> getWorkflowAndGroup(List<ChangeRequestRoleModel> roles,
-                                                            Map<Long, ChangeRequestWorkflowModel> mapWorkflows)
-            throws BusinessException {
-        if (roles == null || roles.isEmpty()) {
-            return roles;
-        }
-
-
-        for (ChangeRequestRoleModel role : roles) {
-            List<ChangeRequestRoleUserModel> cabUsers = role.getUsers();
+        for (var role : requestRoleLst) {
+            var cabUsers = role.getUsers();
             if (cabUsers == null || cabUsers.isEmpty()) {
                 role.setWorkflows(Collections.emptyList());
                 continue;
@@ -519,7 +459,7 @@ public class ChangeRequestRoleServiceImpl implements ChangeRequestRoleService {
 
             var groupedByWorkflow = cabUsers.stream().collect(
                     Collectors.groupingBy(ChangeRequestRoleUserModel::getChangeRequestWorkflowId));
-            List<ChangeRequestRoleWorkflowListModel> workflowUsersList = new ArrayList<>();
+            var workflowUsersList = new ArrayList<ChangeRequestRoleWorkflowListModel>();
             for (Map.Entry<Long, List<ChangeRequestRoleUserModel>> workflowEntry : groupedByWorkflow.entrySet()) {
                 var usersInCurrentWorkflow = workflowEntry.getValue();
 
@@ -537,16 +477,15 @@ public class ChangeRequestRoleServiceImpl implements ChangeRequestRoleService {
                             .collect(Collectors.toList());
                     sorted2dList.add(sortedGroup);
                 }
-                List<ChangeRequestRoleUserListModel> cabUserListModels =
-                        sorted2dList.stream().map(oneGroup -> {
-                            String groupName = null;
-                            if (!KanbanCommonUtil.listIsEmptyOrNull(oneGroup)) {
-                                groupName = oneGroup.get(0).getCabGroupName();
-                            }
+                var cabUserListModels = sorted2dList.stream().map(oneGroup -> {
+                    String groupName = null;
+                    if (!KanbanCommonUtil.listIsEmptyOrNull(oneGroup)) {
+                        groupName = oneGroup.get(0).getCabGroupName();
+                    }
 
-                            return ChangeRequestRoleUserListModel.builder().users(oneGroup)
-                                    .cabGroupName(groupName).build();
-                        }).collect(Collectors.toList());
+                    return ChangeRequestRoleUserListModel.builder().users(oneGroup)
+                            .cabGroupName(groupName).build();
+                }).collect(Collectors.toList());
 
 
                 workflowUsersList.add(ChangeRequestRoleWorkflowListModel.builder()
@@ -556,7 +495,6 @@ public class ChangeRequestRoleServiceImpl implements ChangeRequestRoleService {
             }
             role.setWorkflows(workflowUsersList);
         }
-
-        return roles;
+        return requestRoleLst;
     }
 }
