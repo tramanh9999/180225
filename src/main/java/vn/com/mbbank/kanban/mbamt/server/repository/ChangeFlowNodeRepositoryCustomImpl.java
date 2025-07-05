@@ -1,8 +1,5 @@
 package vn.com.mbbank.kanban.mbamt.server.repository;
 
-import vn.com.mbbank.kanban.mbamt.server.enums.ChangeFlowNodeType;
-import vn.com.mbbank.kanban.mbamt.server.model.ChangeFlowNodeModel;
-import vn.com.mbbank.kanban.mbamt.server.model.PagingRequestModel;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
@@ -11,6 +8,9 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
+import vn.com.mbbank.kanban.mbamt.server.enums.ChangeFlowNodeTypeEnum;
+import vn.com.mbbank.kanban.mbamt.server.model.ChangeFlowNodeModel;
+import vn.com.mbbank.kanban.mbamt.server.model.PagingRequestModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -119,7 +119,7 @@ public class ChangeFlowNodeRepositoryCustomImpl implements ChangeFlowNodeReposit
 
     @Override
     public List<ChangeFlowNodeModel> findChangeFlowNodesByTemplateIdAndTypeIn(Long changeTemplateId,
-                                                                              List<ChangeFlowNodeType> types) {
+                                                                              List<ChangeFlowNodeTypeEnum> types) {
         Objects.requireNonNull(changeTemplateId, "Change Template ID cannot be null");
 
 
@@ -146,7 +146,7 @@ public class ChangeFlowNodeRepositoryCustomImpl implements ChangeFlowNodeReposit
         Query query = entityManager.createNativeQuery(sql);
         query.setParameter("changeTemplateId", changeTemplateId);
         query.setParameter("types",
-                types.stream().map(ChangeFlowNodeType::name).collect(Collectors.toList()));
+                types.stream().map(ChangeFlowNodeTypeEnum::name).collect(Collectors.toList()));
 
         // Get the result list. createNativeQuery returns List<Object[]>.
         List<Object[]> results = query.getResultList();
@@ -162,7 +162,7 @@ public class ChangeFlowNodeRepositoryCustomImpl implements ChangeFlowNodeReposit
                 .name((String) row[1])                     // Assuming NAME is second column and a String
                 .changeFlowId(
                         ((Number) row[2]).longValue()) // Assuming CHANGE_FLOW_ID is third and Number
-                .type((ChangeFlowNodeType) ChangeFlowNodeType.valueOf(
+                .type((ChangeFlowNodeTypeEnum) ChangeFlowNodeTypeEnum.valueOf(
                         String.valueOf(row[3])))                    // Assuming
                 // TYPE
                 // is fourth

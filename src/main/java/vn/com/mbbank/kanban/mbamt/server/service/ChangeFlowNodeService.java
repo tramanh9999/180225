@@ -1,8 +1,8 @@
 package vn.com.mbbank.kanban.mbamt.server.service;
 
+import org.springframework.data.domain.Page;
 import vn.com.mbbank.kanban.mbamt.server.model.ChangeFlowNodeModel;
 import vn.com.mbbank.kanban.mbamt.server.model.PagingRequestModel;
-import org.springframework.data.domain.Page;
 
 import java.util.List;
 import java.util.Map;
@@ -29,7 +29,7 @@ public interface ChangeFlowNodeService {
      */
     Page<String> findPagingUsernameById(Long id, PagingRequestModel pagingRequestModel);
 
-    List<ChangeFlowNodeModel> findChangeFlowNodesByTemplateId(Long changeTemplateId);
+    List<ChangeFlowNodeModel> findAllChangeFlowNodesByChangeTemplateId(Long changeTemplateId);
 
     ChangeFlowNodeModel findByNodeId(String nodeId);
 

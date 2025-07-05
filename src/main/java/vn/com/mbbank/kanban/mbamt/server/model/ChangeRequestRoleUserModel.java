@@ -15,6 +15,7 @@ public class ChangeRequestRoleUserModel extends BaseModel {
     private Long id;
     private Long changeRequestRoleId;
     private String username;
+    private String cabGroupName;
     private int cabGroup;
     private int cabGroupOrder;
     private Long changeRequestWorkflowDetailId;
@@ -22,5 +23,4 @@ public class ChangeRequestRoleUserModel extends BaseModel {
     private String changeRequestWorkflowName;
     private Long changeNodeId;
     private String changeNodeName;
-
 }

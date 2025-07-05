@@ -1,6 +1,6 @@
 package vn.com.mbbank.kanban.mbamt.server.enums;
 
-public enum ChangeFlowNodeType {
+public enum ChangeFlowNodeTypeEnum {
 
     APPROVAL, CAB, STAGE, START, END
 }

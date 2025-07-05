@@ -1,10 +1,10 @@
 package vn.com.mbbank.kanban.mbamt.server.entity;
 
-import vn.com.mbbank.kanban.mbamt.server.enums.ChangeFlowNodeType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import vn.com.mbbank.kanban.mbamt.server.enums.ChangeFlowNodeTypeEnum;
 
 @Entity
 @Table(name = "CHANGE_FLOW_NODE")
@@ -25,7 +25,7 @@ public class ChangeFlowNodeEntity {
 
     @Column(name = "TYPE", length = 255)
     @Enumerated(EnumType.STRING)
-    private ChangeFlowNodeType type;
+    private ChangeFlowNodeTypeEnum type;
 
     @Column(name = "NAME", length = 255)
     private String name;

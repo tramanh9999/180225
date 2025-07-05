@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import vn.com.mbbank.kanban.mbamt.server.entity.ChangeRequestRoleEntity;
+import vn.com.mbbank.kanban.mbamt.server.enums.ChangeFlowNodeTypeEnum;
 import vn.com.mbbank.kanban.mbamt.server.mapper.ChangeRequestRoleMapper;
 import vn.com.mbbank.kanban.mbamt.server.model.*;
 import vn.com.mbbank.kanban.mbamt.server.repository.ChangeRequestRoleRepository;
@@ -187,7 +188,7 @@ public class ChangeRequestRoleServiceImpl implements ChangeRequestRoleService {
         }
 
         List<ChangeFlowNodeModel> flowNodeModelList =
-                changeFlowNodeService.findChangeFlowNodesByTemplateId(changeTemplateId);
+                changeFlowNodeService.findAllChangeFlowNodesByChangeTemplateId(changeTemplateId);
         Map<Long, ChangeFlowNodeModel> mapFlowNode = flowNodeModelList.stream()
                 .collect(Collectors.toMap(ChangeFlowNodeModel::getId, Function.identity()));
 
@@ -334,7 +335,7 @@ public class ChangeRequestRoleServiceImpl implements ChangeRequestRoleService {
                         workflowDetailModelMap.get(roleUser.getChangeRequestWorkflowDetailId());
                 if (detailModel != null) {
                     roleUser.setChangeRequestWorkflowId(detailModel.getChangeRequestWorkflowId());
-                    roleUser.setChangeNodeName(detailModel.getChangeNodeModel().getName());
+                    roleUser.setChangeNodeName(detailModel.getChangeNodeModel().getNodeName());
                     roleUser.setChangeRequestWorkflowName(
                             detailModel.getChangeRequestWorkflowModel().getName());
                     roleUser.setChangeNodeId(detailModel.getChangeNodeModel().getId());
@@ -487,11 +488,6 @@ public class ChangeRequestRoleServiceImpl implements ChangeRequestRoleService {
                             .changeRequestId(finalChangeRequestId).changeFlowNode(flowNode).build();
 
             if (ChangeFlowNodeTypeEnum.CAB.equals(flowNode.getType())) {
-                role.setWorkflows(List.of(mapWorkflows.keySet()));
-                List<ChangeRequestRoleWorkflowListModel> wls = new ArrayList<>();
-                for (Map.Entry<Long, ChangeRequestWorkflowModel> workflowEntry : mapWorkflows.entrySet()) {
-                    ChangeRequestWorkflowModel value = workflowEntry.getValue();
-                }
 
             }
             finalUsersByChangeRequestRoleId.put(role.getId(),

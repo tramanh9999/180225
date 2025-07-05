@@ -1,7 +1,7 @@
 package vn.com.mbbank.kanban.mbamt.server.service;
 
-import vn.com.mbbank.kanban.mbamt.server.model.ChangeRequestWorkflowDetailModel;
 import org.springframework.transaction.annotation.Transactional;
+import vn.com.mbbank.kanban.mbamt.server.model.ChangeRequestWorkflowDetailModel;
 
 import java.util.List;
 import java.util.Optional;
@@ -37,4 +37,13 @@ public interface ChangeRequestWorkflowDetailService {
      */
     List<ChangeRequestWorkflowDetailModel> findWorkflowDetailByIds(
             List<Long> changeRequestWorkflowDetailIds);
+
+    /**
+     * [EN] Description: Retrieves all ChangeRequestWorkflowDetailModel
+     * objects associated with a specific Change Request ID.
+     *
+     * @param changeRequestId The ID of the Change Request for which to retrieve workflow details.
+     * @return A List of ChangeRequestWorkflowDetailModel objects associated with the specified Change Request ID.
+     */
+    List<ChangeRequestWorkflowDetailModel> findAllByChangeRequestId(Long changeRequestId);
 }

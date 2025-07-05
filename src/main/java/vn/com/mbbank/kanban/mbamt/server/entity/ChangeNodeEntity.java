@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
-@Table(name = "CHANGE_NODE")
+@Table(name = "CHANGE_WORK_FLOW_NODE")
 @Data
 public class ChangeNodeEntity extends BaseEntity<Long> {
 
@@ -12,6 +12,6 @@ public class ChangeNodeEntity extends BaseEntity<Long> {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "NAME")
-    private String name;
+    @Column(name = "NODE_NAME")
+    private String nodeName;
 }

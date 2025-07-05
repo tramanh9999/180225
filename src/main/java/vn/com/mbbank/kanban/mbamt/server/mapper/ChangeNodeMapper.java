@@ -1,9 +1,9 @@
 package vn.com.mbbank.kanban.mbamt.server.mapper;
 
-import vn.com.mbbank.kanban.mbamt.server.entity.ChangeNodeEntity;
-import vn.com.mbbank.kanban.mbamt.server.model.ChangeNodeModel;
 import org.mapstruct.Mapper;
 import org.springframework.stereotype.Component;
+import vn.com.mbbank.kanban.mbamt.server.entity.ChangeNodeEntity;
+import vn.com.mbbank.kanban.mbamt.server.model.ChangeWorkflowNodeModel;
 
 import java.util.List;
 
@@ -20,12 +20,12 @@ public interface ChangeNodeMapper {
      * @param entities the entities to convert
      * @return the converted models
      */
-    List<ChangeNodeModel> toDtoList(List<ChangeNodeEntity> entities);
+    List<ChangeWorkflowNodeModel> toDtoList(List<ChangeNodeEntity> entities);
 
-    ChangeNodeModel cloneModel(ChangeNodeModel model);
+    ChangeWorkflowNodeModel cloneModel(ChangeWorkflowNodeModel model);
 
 
-    List<ChangeNodeModel> toModels(List<ChangeNodeEntity> entities);
+    List<ChangeWorkflowNodeModel> toModels(List<ChangeNodeEntity> entities);
 
-    ChangeNodeModel toModel(ChangeNodeEntity entity);
+    ChangeWorkflowNodeModel toModel(ChangeNodeEntity entity);
 }

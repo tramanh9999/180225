@@ -1,15 +1,15 @@
 package vn.com.mbbank.kanban.mbamt.server.service.impl;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Service;
 import vn.com.mbbank.kanban.mbamt.server.entity.ChangeFlowNodeEntity;
-import vn.com.mbbank.kanban.mbamt.server.enums.ChangeFlowNodeType;
+import vn.com.mbbank.kanban.mbamt.server.enums.ChangeFlowNodeTypeEnum;
 import vn.com.mbbank.kanban.mbamt.server.mapper.ChangeFlowNodeMapper;
 import vn.com.mbbank.kanban.mbamt.server.model.ChangeFlowNodeModel;
 import vn.com.mbbank.kanban.mbamt.server.model.PagingRequestModel;
 import vn.com.mbbank.kanban.mbamt.server.repository.ChangeFlowNodeRepository;
 import vn.com.mbbank.kanban.mbamt.server.service.ChangeFlowNodeService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,10 +44,11 @@ public class ChangeFlowNodeServiceImpl implements ChangeFlowNodeService {
 
 
     @Override
-    public List<ChangeFlowNodeModel> findChangeFlowNodesByTemplateId(Long changeTemplateId) {
+    public List<ChangeFlowNodeModel> findAllChangeFlowNodesByChangeTemplateId(
+            Long changeTemplateId) {
         return new ArrayList<>(
                 changeFlowNodeRepository.findChangeFlowNodesByTemplateIdAndTypeIn(changeTemplateId,
-                        List.of(ChangeFlowNodeType.CAB, ChangeFlowNodeType.APPROVAL)));
+                        List.of(ChangeFlowNodeTypeEnum.CAB, ChangeFlowNodeTypeEnum.APPROVAL)));
     }
 
     @Override

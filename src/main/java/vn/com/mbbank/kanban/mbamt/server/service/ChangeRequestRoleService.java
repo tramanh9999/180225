@@ -1,10 +1,12 @@
 package vn.com.mbbank.kanban.mbamt.server.service;
 
+import jakarta.transaction.Transactional;
 import vn.com.mbbank.kanban.mbamt.server.model.BusinessException;
 import vn.com.mbbank.kanban.mbamt.server.model.ChangeRequestRoleModel;
-import jakarta.transaction.Transactional;
+import vn.com.mbbank.kanban.mbamt.server.model.ChangeRequestWorkflowModel;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Service interface for managing Change Request Roles.
@@ -50,4 +52,8 @@ public interface ChangeRequestRoleService {
 
     List<ChangeRequestRoleModel> getOrDefaultAllChangeFlowNodesByChangeTemplateIdAndRequestId(
             Long changeTemplateId, Long changeRequestId) throws BusinessException;
+
+    List<ChangeRequestRoleModel> getWorkflowAndGroup(List<ChangeRequestRoleModel> roles,
+                                                     Map<Long, ChangeRequestWorkflowModel> mapWorkflows)
+            throws BusinessException;
 }

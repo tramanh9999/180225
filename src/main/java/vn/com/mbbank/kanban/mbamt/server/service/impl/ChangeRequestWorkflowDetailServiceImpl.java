@@ -1,19 +1,19 @@
 package vn.com.mbbank.kanban.mbamt.server.service.impl;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import vn.com.mbbank.kanban.mbamt.server.entity.ChangeRequestWorkflowDetailEntity;
 import vn.com.mbbank.kanban.mbamt.server.mapper.ChangeRequestWorkflowDetailMapper;
 import vn.com.mbbank.kanban.mbamt.server.model.BusinessException;
-import vn.com.mbbank.kanban.mbamt.server.model.ChangeNodeModel;
 import vn.com.mbbank.kanban.mbamt.server.model.ChangeRequestWorkflowDetailModel;
+import vn.com.mbbank.kanban.mbamt.server.model.ChangeWorkflowNodeModel;
 import vn.com.mbbank.kanban.mbamt.server.model.ErrorCodeCommon;
 import vn.com.mbbank.kanban.mbamt.server.repository.ChangeRequestWorkflowDetailRepository;
 import vn.com.mbbank.kanban.mbamt.server.service.ChangeFlowNodeService;
 import vn.com.mbbank.kanban.mbamt.server.service.ChangeNodeService;
 import vn.com.mbbank.kanban.mbamt.server.service.ChangeRequestWorkflowDetailService;
 import vn.com.mbbank.kanban.mbamt.server.service.ChangeRequestWorkflowService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
@@ -123,7 +123,7 @@ public class ChangeRequestWorkflowDetailServiceImpl implements ChangeRequestWork
         var workflowMaps = changeRequestWorkflowService.getMapChangeWorkflowByIds(workflowIds);
 
         var changeNodeMaps = changeNodeService.findAllByIds(changeNodeIds).stream()
-                .collect(Collectors.toMap(ChangeNodeModel::getId, Function.identity()));
+                .collect(Collectors.toMap(ChangeWorkflowNodeModel::getId, Function.identity()));
 
         // set    private ChangeNodeModel changeNodeModel;
         //    private ChangeRequestWorkflowModel changeRequestWorkflowModel;  to workflowDetails

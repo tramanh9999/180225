@@ -1,9 +1,9 @@
 package vn.com.mbbank.kanban.mbamt.server.repository;
 
-import vn.com.mbbank.kanban.mbamt.server.enums.ChangeFlowNodeType;
+import org.springframework.data.domain.Page;
+import vn.com.mbbank.kanban.mbamt.server.enums.ChangeFlowNodeTypeEnum;
 import vn.com.mbbank.kanban.mbamt.server.model.ChangeFlowNodeModel;
 import vn.com.mbbank.kanban.mbamt.server.model.PagingRequestModel;
-import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -20,5 +20,5 @@ public interface ChangeFlowNodeRepositoryCustom {
 
 
     List<ChangeFlowNodeModel> findChangeFlowNodesByTemplateIdAndTypeIn(Long changeTemplateId,
-                                                                       List<ChangeFlowNodeType> types);
+                                                                       List<ChangeFlowNodeTypeEnum> types);
 }

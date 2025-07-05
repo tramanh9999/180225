@@ -14,4 +14,5 @@ import java.util.List;
 @NoArgsConstructor
 public class ChangeRequestRoleUserListModel extends BaseModel {
     List<ChangeRequestRoleUserModel> users;
+    String cabGroupName;
 }
