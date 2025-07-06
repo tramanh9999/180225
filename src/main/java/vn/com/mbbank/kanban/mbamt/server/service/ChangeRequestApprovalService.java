@@ -49,24 +49,6 @@ public interface ChangeRequestApprovalService {
     List<ChangeRequestApprovalModel> findByChangeRequestId(Long changeRequestId);
 
     /**
-     * Find by overall status list.
-     *
-     * @param status the status
-     * @return the list
-     */
-    List<ChangeRequestApprovalModel> findByOverallStatus(String status);
-
-    /**
-     * Find by change request id and overall status list.
-     *
-     * @param changeRequestId the change request id
-     * @param status          the status
-     * @return the list
-     */
-    List<ChangeRequestApprovalModel> findByChangeRequestIdAndOverallStatus(Long changeRequestId,
-                                                                           String status);
-
-    /**
      * Find by change flow id and node id change request role model.
      *
      * @param changeRequestId     the change request id

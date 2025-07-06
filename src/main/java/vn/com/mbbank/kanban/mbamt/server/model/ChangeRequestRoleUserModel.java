@@ -18,8 +18,10 @@ public class ChangeRequestRoleUserModel extends BaseModel {
     private String cabGroupName;
     private int cabGroup;
     private int cabGroupOrder;
+    //changeRequestWorkflowDetailId== null -> custom approval user, else workflow node approvaluser
     private Long changeRequestWorkflowDetailId;
-    private Long changeRequestWorkflowId;
+    //don't delete this field, it is for custom approvaluser
+    private long changeRequestWorkflowId;
     private String changeRequestWorkflowName;
     private Long changeNodeId;
     private String changeNodeName;

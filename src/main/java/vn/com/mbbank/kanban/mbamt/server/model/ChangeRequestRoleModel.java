@@ -16,18 +16,14 @@ import java.util.Objects;
 @NoArgsConstructor
 public class ChangeRequestRoleModel extends BaseModel {
     private Long id;
-    private Long changeFlowNodeId;
-    private Long changeRequestWorkflowId;
+
     private Long changeRequestId;
-    private List<ChangeRequestRoleUserModel> users;
+    //flow node
+    private long changeFlowNodeId;
     private ChangeFlowNodeModel changeFlowNode;
-    // new
+
     @Builder.Default
     private List<ChangeRequestRoleWorkflowListModel> workflows = new ArrayList<>();
-
-    public List<ChangeRequestRoleUserModel> getUsers() {
-        return Objects.requireNonNullElseGet(users, ArrayList::new);
-    }
 
     public List<ChangeRequestRoleWorkflowListModel> getWorkflows() {
         return Objects.requireNonNullElseGet(workflows, ArrayList::new);

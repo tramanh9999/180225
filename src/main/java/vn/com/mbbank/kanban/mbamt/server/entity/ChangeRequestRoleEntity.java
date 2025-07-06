@@ -13,7 +13,7 @@ public class ChangeRequestRoleEntity extends BaseEntity<Long> {
     private Long id;
 
     @Column(name = "CHANGE_FLOW_NODE_ID")
-    private Long changeFlowNodeId;
+    private long changeFlowNodeId;
 
     @Column(name = "CHANGE_REQUEST_WORKFLOW_ID")
     private Long changeRequestWorkflowId;

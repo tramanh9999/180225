@@ -1,9 +1,9 @@
 package vn.com.mbbank.kanban.mbamt.server.mapper;
 
-import vn.com.mbbank.kanban.mbamt.server.entity.ChangeRequestRoleUserEntity;
-import vn.com.mbbank.kanban.mbamt.server.model.ChangeRequestRoleUserModel;
 import org.mapstruct.Mapper;
 import org.springframework.stereotype.Component;
+import vn.com.mbbank.kanban.mbamt.server.entity.ChangeRequestRoleUserEntity;
+import vn.com.mbbank.kanban.mbamt.server.model.ChangeRequestRoleUserModel;
 
 import java.util.List;
 
@@ -15,4 +15,6 @@ public interface ChangeRequestRoleUserMapper {
     List<ChangeRequestRoleUserModel> toModelList(List<ChangeRequestRoleUserEntity> entities);
 
     ChangeRequestRoleUserEntity toEntity(ChangeRequestRoleUserModel model);
+
+    ChangeRequestRoleUserModel cloneModel(ChangeRequestRoleUserModel model);
 }

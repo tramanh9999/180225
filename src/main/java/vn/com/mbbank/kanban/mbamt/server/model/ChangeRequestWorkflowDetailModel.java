@@ -13,6 +13,8 @@ public class ChangeRequestWorkflowDetailModel {
     private Long changeRequestWorkflowId;
     private Long changeNodeId;
 
+    private DetailSettingsModel detailSettingsModel;
+
     private ChangeWorkflowNodeModel changeNodeModel;
     private ChangeRequestWorkflowModel changeRequestWorkflowModel;
     // Add any other fields that might be relevant for your business logic

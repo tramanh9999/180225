@@ -7,7 +7,6 @@ import vn.com.mbbank.kanban.mbamt.server.entity.ChangeRequestWorkflowDetailEntit
 import vn.com.mbbank.kanban.mbamt.server.mapper.ChangeRequestWorkflowDetailMapper;
 import vn.com.mbbank.kanban.mbamt.server.model.*;
 import vn.com.mbbank.kanban.mbamt.server.repository.ChangeRequestWorkflowDetailRepository;
-import vn.com.mbbank.kanban.mbamt.server.service.ChangeFlowNodeService;
 import vn.com.mbbank.kanban.mbamt.server.service.ChangeNodeService;
 import vn.com.mbbank.kanban.mbamt.server.service.ChangeRequestWorkflowDetailService;
 import vn.com.mbbank.kanban.mbamt.server.service.ChangeRequestWorkflowService;
@@ -26,9 +25,7 @@ public class ChangeRequestWorkflowDetailServiceImpl implements ChangeRequestWork
     private final ChangeRequestWorkflowDetailRepository detailRepository;
     private final ChangeRequestWorkflowDetailMapper detailMapper;
     private final ChangeRequestWorkflowService changeRequestWorkflowService;
-    private final ChangeFlowNodeService changeFlowNodeService;
     private final ChangeNodeService changeNodeService;
-    private final ChangeRequestWorkflowDetailService changeRequestWorkflowDetailService;
 
 
     @Override
@@ -157,7 +154,21 @@ public class ChangeRequestWorkflowDetailServiceImpl implements ChangeRequestWork
         List<Long> wlIds =
                 changeRequestWorkflowService.findAllByChangeRequestId(changeRequestId).stream()
                         .map(ChangeRequestWorkflowModel::getId).collect(Collectors.toList());
-        return changeRequestWorkflowDetailService.findAllByChangeRequestWorkflowId(wlIds).stream()
+        return detailRepository.findAllByChangeRequestWorkflowIdInOrderByIdDesc(wlIds).stream()
                 .map(detailMapper::toModel).toList();
+    }
+
+    @Override
+    public List<ChangeRequestWorkflowDetailEntity> findAllByChangeRequestWorkflowId(
+            List<Long> workflowIds) {
+        return List.of();
+    }
+
+
+    @Override
+    public List<ChangeRequestWorkflowDetailModel> findAllByChangeRequestWorkflowIdOrderByIdDesc(
+            List<Long> workflowIds) {
+        return detailRepository.findAllByChangeRequestWorkflowIdInOrderByIdDesc(workflowIds)
+                .stream().map(detailMapper::toModel).toList();
     }
 }

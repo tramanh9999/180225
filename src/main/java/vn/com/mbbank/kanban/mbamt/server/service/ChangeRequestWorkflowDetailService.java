@@ -61,4 +61,7 @@ public interface ChangeRequestWorkflowDetailService {
 
     List<ChangeRequestWorkflowDetailEntity> findAllByChangeRequestWorkflowId(
             List<Long> workflowIds);
+
+    List<ChangeRequestWorkflowDetailModel> findAllByChangeRequestWorkflowIdOrderByIdDesc(
+            List<Long> workflowIds);
 }
